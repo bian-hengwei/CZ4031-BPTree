@@ -1,12 +1,15 @@
-cmake_minimum_required(VERSION 3.24)
-project(CZ4031Project1)
+cmake_minimum_required(VERSION 3.10.0)
 
-set(CMAKE_CXX_STANDARD 14)
+project(CZ4031Project1 VERSION 0.1.0)
 
-include_directories(src)
+set(CMAKE_CXX_STANDARD 11)
+
+include_directories(inc)
 
 add_executable(CZ4031Project1
         src/main.cpp
-        src/dataTypes.h
         src/storage.cpp
-        src/storage.h src/address.cpp src/address.h)
+        src/address.cpp)
+
+set(CPACK_PROJECT_NAME ${PROJECT_NAME})
+set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
