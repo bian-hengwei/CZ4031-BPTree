@@ -1,16 +1,16 @@
-#include "storage.h"
-#include "types.h"
-
 #include <iostream>
-#include <fstream>
-#include <sstream>
-#include <stdio.h>
-#include <string.h>
+#include "storage.h"
 
-int main(){
-    int DISK_CAPACITY = 500;    // 500MB of main memory used as disk storage
-    int BLOCK_SIZE = 200;       // Set BlockSize to 200B
+using namespace std;
 
+int main() {
+    int DISK_CAPACITY = 500000000;      // 500MB of memory, can be modified
+    int BLOCK_SIZE = 200;               // 200B
 
+    Storage storage(DISK_CAPACITY, BLOCK_SIZE);
+
+    cout << storage.getNumOfRecords() << endl;
+    cout << storage.getNumOfBlocks() << endl;
+    cout << sizeof(RecordMovie) << endl;
     return 0;
 }

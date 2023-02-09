@@ -1,0 +1,3 @@
+/Users/syyylm/Documents/CZ4031Project1/cmake-build-debug/CMakeFiles/CZ4031Project1.dir
+/Users/syyylm/Documents/CZ4031Project1/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/syyylm/Documents/CZ4031Project1/cmake-build-debug/CMakeFiles/rebuild_cache.dir

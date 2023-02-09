@@ -1,91 +1,44 @@
+//
+// Created by Yu Song on 9/2/23.
+//
+
 #ifndef STORAGE_H
 #define STORAGE_H
 
-#include "types.h"
+#include "dataTypes.h"
+#include "address.h"
 
-using namespace std;
-
-class DiskStorage
-{
+class Storage {
 public:
-    // constructor
-    DiskStorage(size_t diskSize, size_t blockSize);
+    Storage(size_t diskSize, size_t blockSize);
 
-    // allocates a block from the memory pool
-    bool allocateBlock();
+    virtual ~Storage();
 
-    // allocates a chunk within a block
-    Address allocate(size_t recordSize);
+    void addBlock();
 
-    // deletes existing record from its block, deallocates block if it becomes empty after deletion of record
-    bool deallocate(Address recAddress, size_t sizeDeallocated);
+    Address allocRecord(size_t recordSize);
 
-    // returns data entry based on input parameters
-    void *read(Address recAddress, size_t size);
+    bool isMemoryBlockSetToZero(const char *blockPtr) const;
 
-    // write data entry into disk in a given memory address
-    Address write(void *itemAddress, size_t size);
+    void deallocRecord(Address recordAddress, size_t recordSize);
 
-    // Method overloading
-    // update data entry from disk from a given memory
-    Address write(void *itemAddress, size_t size, Address diskAddress);
+    static void loadRecord(Address address, size_t recordSize, char *recordBuffer);
 
-    size_t getPoolSize() const
-    {
-        return diskSize;
-    }
+    Address saveRecord(char *recordPtr, size_t recordSize);
 
-    size_t getBlockSize() const
-    {
-        return blockSize;
-    };
+    int getNumOfBlocks() const;
 
-    size_t getUsedBlockSize() const
-    {
-        return usedBlockSize;
-    };
-
-    size_t getUsedSize() const
-    {
-        return usedSize;
-    }
-
-    size_t getRealUsedSize() const
-    {
-        return realUsedSize;
-    }
-
-    int getAllocatedBlocks() const
-    {
-        return allocatedBlocks;
-    };
-
-    int getVisitedBlocks() const
-    {
-        return visitedBlocks;
-    }
-
-    int resetVisitedBlocks()
-    {
-        int temp = visitedBlocks;
-        visitedBlocks = 0;
-        return temp;
-    }
-
-    // destructor
-    ~DiskStorage();
+    int getNumOfRecords() const;
 
 private:
-    size_t diskSize;       // max pool size
-    size_t blockSize;      // fixed size of each block
-    size_t usedSize;       // current storage size used based on number of blocks used
-    size_t realUsedSize; // actual storage size used based on size of records
-    size_t usedBlockSize;  // storage size used within current block pointed to
-    int allocatedBlocks;
-    int visitedBlocks;
-    void *diskPtr;
-    void *blockPtr;
+    size_t diskSize;
+    size_t blockSize;
+    size_t curBlockUsedSize = 0;
+    int numOfBlocks = 0;
+    int numOfRecords = 0;
+    char *storagePtr;
+    char *blockPtr;
 };
 
 
-#endif
+#endif //STORAGE_H
