@@ -8,8 +8,8 @@
 #include <string.h>
 
 int main(){
-
-    int BLOCKSIZE = 200; // Set BlockSize to 200B
+    int DISK_CAPACITY = 500;    // 500MB of main memory used as disk storage
+    int BLOCK_SIZE = 200;       // Set BlockSize to 200B
 
 
     return 0;
