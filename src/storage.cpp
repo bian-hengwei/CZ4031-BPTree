@@ -1,137 +1,101 @@
-#include "storage.h"
-#include "types.h"
-
+//
+// Created by Yu Song on 9/2/23.
+//
 #include <iostream>
-#include <vector>
-#include <tuple>
-#include <cstring>
+#include "storage.h"
 
 using namespace std;
 
-// constructor
-DiskStorage::DiskStorage(size_t diskSize, size_t blockSize)
-{
-    // blockSize is the capacity of each block - set to 200B in main.cpp
-    this->blockSize = blockSize; 
+Storage::Storage(size_t diskSize, size_t blockSize) {
+//    Total capacity of the disk
+    this->diskSize = diskSize;
+    this->blockSize = blockSize;
 
-    // diskSize is the capacity of the disk
-    this->diskSize = diskSize;   
-    
-    // Initialise the variables keeping track of usage to 0.
-    this->realUsedSize = 0;
-    this->allocatedBlocks = 0;
-    this->usedSize = 0;
-
-    this->diskPtr = operator new(diskSize);
-    memset(diskPtr, '\0', diskSize); 
-    this->blockPtr = nullptr;
-    this->usedBlockSize = 0;
-    this->visitedBlocks = 0;
+    // allocate memory on the heap.
+    // pointer to the start of the block of memory that has been allocated
+    storagePtr = static_cast<char *>(operator new(diskSize));
+    // Initialize the allocated memory
+    memset(storagePtr, '\0', diskSize);
+    // Initialize the first free block
+    blockPtr = storagePtr;
 }
 
-bool DiskStorage::allocateBlock()
-{
-    // Allocate block as long as disk capacity still allows
-    if (usedSize + blockSize <= diskSize)
-    {
-        usedSize = blockSize + usedSize;
-        usedBlockSize = 0; // reset offset to 0
-        blockPtr = (char *)diskPtr + allocatedBlocks * blockSize;
-        allocatedBlocks += 1;
-        return true;
-    }
-    else
-    {
-        cout << "Disk capacity is full! " << usedSize << "/" << diskSize << " B is used right now." << '\n';
-        return false;
+void Storage::addBlock() {
+    try {
+        // Check if there is enough memory
+        if (diskSize < numOfBlocks * blockSize + blockSize) {
+            throw;
+        }
+        numOfBlocks += 1;
+        curBlockUsedSize = 0;
+        // By casting blockPtr to a char * type,
+        // we can perform arithmetic on the pointer in units of bytes,
+        // address of a block in the storage.
+        blockPtr = storagePtr + numOfBlocks * blockSize;
+    } catch (...) {
+        cout << "Unable to add a new block due to not insufficient storage." << endl;
     }
 }
 
-Address DiskStorage::allocate(size_t recordSize)
-{
-    if (recordSize > blockSize)
-    {
-        cout << "Size of record to be allocated is larger than block size! (Size required:" << recordSize << "> Block size:" << blockSize << ")" << '\n';
-        throw invalid_argument("Size requested for new record is bigger than block size!");
+Address Storage::allocRecord(size_t recordSize) {
+    // no space in current block, create a new block
+    if (blockSize < recordSize + curBlockUsedSize) {
+        addBlock();
     }
+    // address of the record
+    Address address(blockPtr, curBlockUsedSize);
+    curBlockUsedSize += recordSize;
+    numOfRecords++;
+    return address;
+}
 
-    if (allocatedBlocks == 0 || (usedBlockSize + recordSize > blockSize))
-    {
-        if (allocateBlock() == false)
-        {
-            throw logic_error("Block allocation failed!");
+bool Storage::isMemoryBlockSetToZero(const char *startPtr) const {
+    for (size_t i = 0; i < blockSize; i++) {
+        if (startPtr[i] != '\0') {
+            return false;
         }
     }
-
-    short int blockOffset = usedBlockSize;
-
-    usedBlockSize += recordSize;
-    realUsedSize += recordSize;
-
-    Address recAddress = {blockPtr, blockOffset};
-
-    return recAddress;
+    return true;
 }
 
-bool DiskStorage::deallocate(Address recAddress, size_t sizeDeallocated)
-{
-    try
-    {
-        // deleting the record from the block
-        void *addressToDelete = (char *)recAddress.blockAddress + recAddress.offset;
-        memset(addressToDelete, '\0', sizeDeallocated);
-
-        realUsedSize -= sizeDeallocated;
-
-        // case where block becomes empty after deallocation of record
-        // creating a test block full of NULL values to test whether actual block is empty
-        unsigned char testBlock[blockSize];
-        memset(testBlock, '\0', blockSize);
-
-        if (memcmp(testBlock, recAddress.blockAddress, blockSize) == 0) // if the first blockSize bytes of memory are equal in testBlock and in blockAddress
-        {
-            usedSize -= blockSize;
-            allocatedBlocks--;
-        }
-
-        return true;
+void Storage::deallocRecord(Address recordAddress, size_t recordSize) {
+    // free the allocated space for the record
+    memset(recordAddress.getAbsoluteAddress(), '\0', recordSize);
+    numOfRecords--;
+    if (isMemoryBlockSetToZero(recordAddress.getBlockPtr())) {
+        numOfBlocks--;
     }
-    catch (...) // for all kinds of exceptions caught
-    {
-        cout << "Could not remove record/block at given address (" << recAddress.blockAddress << ") and offset (" << recAddress.offset << "). Please try again" << '\n';
-        return false;
-    };
 }
 
-void *DiskStorage::read(Address recAddress, size_t size)
-{
-    void *mainMemAddress = operator new(size);
-    memcpy(mainMemAddress, (char *)recAddress.blockAddress + recAddress.offset, size);
-
-    visitedBlocks++;
-
-    return mainMemAddress;
+void Storage::loadRecord(Address address, size_t recordSize, char *recordBuffer) {
+    memcpy(recordBuffer, address.getAbsoluteAddress(), recordSize);
 }
 
-Address DiskStorage::write(void *itemAddress, size_t size)
-{
-    Address diskAddress = allocate(size);
-    memcpy((char *)diskAddress.blockAddress + diskAddress.offset, itemAddress, size);
-
-    visitedBlocks++;
-
-    return diskAddress;
+Address Storage::saveRecord(char *recordPtr, size_t recordSize) {
+    Address recordAddress = allocRecord(recordSize);
+    memcpy(recordAddress.getAbsoluteAddress(), recordPtr, recordSize);
+    return recordAddress;
 }
 
-// method overloading
-Address DiskStorage::write(void *itemAddress, size_t size, Address diskAddress)
-{
-    memcpy((char *)diskAddress.blockAddress + diskAddress.offset, itemAddress, size);
-
-    visitedBlocks++;
-
-    return diskAddress;
+int Storage::getNumOfBlocks() const {
+    return numOfBlocks;
 }
 
-// deconstructor
-DiskStorage::~DiskStorage(){};
+int Storage::getNumOfRecords() const {
+    return numOfRecords;
+}
+
+Storage::~Storage() {
+    // Deallocate the memory
+    operator delete(storagePtr);
+}
+
+
+
+
+
+
+
+
+
+

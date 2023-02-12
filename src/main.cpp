@@ -1,16 +1,16 @@
-#include "storage.h"
-#include "types.h"
-
 #include <iostream>
-#include <fstream>
-#include <sstream>
-#include <stdio.h>
-#include <string.h>
 
-int main(){
+#include "config.h"
+#include "storage.h"
 
-    int BLOCKSIZE = 200; // Set BlockSize to 200B
+using namespace std;
 
+int main()
+{
+    Storage storage(DISK_CAPACITY, BLOCK_SIZE);
 
+    cout << storage.getNumOfRecords() << endl;
+    cout << storage.getNumOfBlocks() << endl;
+    cout << sizeof(RecordMovie) << endl;
     return 0;
 }
