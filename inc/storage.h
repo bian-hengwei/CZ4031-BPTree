@@ -6,7 +6,6 @@
 #define STORAGE_H
 
 #include "dataTypes.h"
-#include "address.h"
 
 class Storage {
 public:
@@ -18,15 +17,19 @@ public:
 
     void addBlock();
 
-    Address allocRecord();
+    char *allocateRecordSpace();
 
     bool isMemoryBlockSetToZero(const char *blockPtr) const;
 
-    void deallocRecord(Address recordAddress);
+    int getBlockNumber(const char *recordAddress);
 
-    static void loadRecord(Address address, char *recordBuffer);
+    char *getBlockPointerOfARecord(char *recordAddress);
 
-    Address saveRecord(char *recordPtr);
+    void deallocRecord(char *recordAddress);
+
+    static void readRecord(char *recordAddress, char *targetBuffer);
+
+    char *writeRecord(char *sourcePtr);
 
     int getNumOfBlocks() const;
 

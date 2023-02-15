@@ -30,25 +30,23 @@ void Storage::addBlock() {
         }
         numOfBlocks += 1;
         curBlockUsedSize = 0;
-        // By casting blockPtr to a char * type,
-        // we can perform arithmetic on the pointer in units of bytes,
+
         // address of a block in the storage.
         blockPtr = storagePtr + numOfBlocks * blockSize;
     } catch (...) {
-        cout << "Unable to add a new block due to not insufficient storage." << endl;
+        cout << "Unable to add a new block due to not insufficient storage. A null pointer is returned." << endl;
     }
 }
 
-Address Storage::allocRecord() {
+char *Storage::allocateRecordSpace() {
     // no space in current block, create a new block
     if (blockSize < RECORD_SIZE + curBlockUsedSize) {
         addBlock();
     }
-    // address of the record
-    Address address(blockPtr, curBlockUsedSize);
+    // recordAddress of the record
+    char *recordAddress = blockPtr + curBlockUsedSize;
     curBlockUsedSize += RECORD_SIZE;
-    numOfRecords++;
-    return address;
+    return recordAddress;
 }
 
 bool Storage::isMemoryBlockSetToZero(const char *startPtr) const {
@@ -60,22 +58,23 @@ bool Storage::isMemoryBlockSetToZero(const char *startPtr) const {
     return true;
 }
 
-void Storage::deallocRecord(Address recordAddress) {
+void Storage::deallocRecord(char *recordAddress) {
     // free the allocated space for the record
-    memset(recordAddress.getAbsoluteAddress(), '\0', RECORD_SIZE);
+    memset(recordAddress, '\0', RECORD_SIZE);
     numOfRecords--;
-    if (isMemoryBlockSetToZero(recordAddress.getBlockPtr())) {
+    if (isMemoryBlockSetToZero(getBlockPointerOfARecord(recordAddress))) {
         numOfBlocks--;
     }
 }
 
-void Storage::loadRecord(Address address, char *recordBuffer) {
-    memcpy(recordBuffer, address.getAbsoluteAddress(), RECORD_SIZE);
+void Storage::readRecord(char *recordAddress, char *targetBuffer) {
+    memcpy(targetBuffer, recordAddress, RECORD_SIZE);
 }
 
-Address Storage::saveRecord(char *recordPtr) {
-    Address recordAddress = allocRecord();
-    memcpy(recordAddress.getAbsoluteAddress(), recordPtr, RECORD_SIZE);
+char *Storage::writeRecord(char *sourcePtr) {
+    char *recordAddress = allocateRecordSpace();
+    memcpy(recordAddress, sourcePtr, RECORD_SIZE);
+    numOfRecords++;
     return recordAddress;
 }
 
@@ -90,6 +89,18 @@ int Storage::getNumOfRecords() const {
 Storage::~Storage() {
     // Deallocate the memory
     operator delete(storagePtr);
+}
+
+int Storage::getBlockNumber(const char *recordAddress) {
+    size_t diff = recordAddress - storagePtr;
+    int blockNum = (int) (diff / blockSize);
+    return blockNum;
+}
+
+char *Storage::getBlockPointerOfARecord(char *recordAddress) {
+    int blockNum = getBlockNumber(recordAddress);
+    char *blockPointer = storagePtr + blockNum * blockSize;
+    return blockPointer;
 }
 
 
