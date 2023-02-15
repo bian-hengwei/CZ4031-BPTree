@@ -5,31 +5,28 @@
 #ifndef STORAGE_H
 #define STORAGE_H
 
-#include "dataTypes.h"
+#include "block.h"
+#include <vector>
+
+using namespace std;
 
 class Storage {
 public:
-    static size_t RECORD_SIZE;
-
-    Storage(size_t diskSize, size_t blockSize);
+    explicit Storage(size_t diskSize);
 
     virtual ~Storage();
 
-    void addBlock();
+    bool AddBlock();
 
-    char *allocateRecordSpace();
+    char *AllocateRecordSpace();
 
-    bool isMemoryBlockSetToZero(const char *blockPtr) const;
+    int GetBlockIndexByAddress(const char *address);
 
-    int getBlockNumber(const char *recordAddress);
+    void DeleteRecord(char *recordAddress);
 
-    char *getBlockPointerOfARecord(char *recordAddress);
+    static void ReadRecord(char *recordAddress, char *targetBuffer);
 
-    void deallocRecord(char *recordAddress);
-
-    static void readRecord(char *recordAddress, char *targetBuffer);
-
-    char *writeRecord(char *sourcePtr);
+    char *WriteRecord(char *sourcePtr);
 
     int getNumOfBlocks() const;
 
@@ -37,12 +34,8 @@ public:
 
 private:
     size_t diskSize;
-    size_t blockSize;
-    size_t curBlockUsedSize = 0;
-    int numOfBlocks = 0;
-    int numOfRecords = 0;
+    vector<Block> blocks;
     char *storagePtr;
-    char *blockPtr;
 };
 
 

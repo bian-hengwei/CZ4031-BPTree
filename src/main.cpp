@@ -5,12 +5,11 @@
 
 using namespace std;
 
-int main()
-{
-    Storage storage(DISK_CAPACITY, BLOCK_SIZE);
+int main() {
+    Storage storage(DISK_CAPACITY);
 
     cout << storage.getNumOfRecords() << endl;
     cout << storage.getNumOfBlocks() << endl;
-    cout << Storage::RECORD_SIZE << endl;
+    cout << RECORD_SIZE << endl;
     return 0;
 }
