@@ -26,7 +26,7 @@ public:
 
     static void ReadRecord(char *recordAddress, char *targetBuffer);
 
-    char *WriteRecord(char *sourcePtr);
+    char *WriteRecord(void *sourcePtr);
 
     int getNumOfBlocks() const;
 

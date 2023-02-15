@@ -37,15 +37,16 @@ bool Storage::AddBlock() {
 }
 
 char *Storage::AllocateRecordSpace() {
-    // no space in current block, create a new block
-    if (BLOCK_SIZE < RECORD_SIZE + blocks.back().GetUsedSize()) {
+    if (blocks.empty()) {
+        AddBlock();
+        // no space in current block, create a new block
+    } else if (BLOCK_SIZE < RECORD_SIZE + blocks[blocks.size() - 1].GetUsedSize()) {
         if (!AddBlock()) {
             return nullptr;
         }
     }
-    Block targetBlock = blocks.back();
     // recordAddress of the record
-    return targetBlock.AllocateRecord();
+    return blocks[blocks.size() - 1].AllocateRecord();
 }
 
 int Storage::GetBlockIndexByAddress(const char *address) {
@@ -62,7 +63,7 @@ void Storage::ReadRecord(char *recordAddress, char *targetBuffer) {
     memcpy(targetBuffer, recordAddress, RECORD_SIZE);
 }
 
-char *Storage::WriteRecord(char *sourcePtr) {
+char *Storage::WriteRecord(void *sourcePtr) {
     char *recordAddress = AllocateRecordSpace();
     memcpy(recordAddress, sourcePtr, RECORD_SIZE);
     return recordAddress;
