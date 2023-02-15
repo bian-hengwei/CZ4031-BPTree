@@ -6,6 +6,8 @@
 
 using namespace std;
 
+size_t Storage::RECORD_SIZE = sizeof(RecordMovie);
+
 Storage::Storage(size_t diskSize, size_t blockSize) {
 //    Total capacity of the disk
     this->diskSize = diskSize;
@@ -37,14 +39,14 @@ void Storage::addBlock() {
     }
 }
 
-Address Storage::allocRecord(size_t recordSize) {
+Address Storage::allocRecord() {
     // no space in current block, create a new block
-    if (blockSize < recordSize + curBlockUsedSize) {
+    if (blockSize < RECORD_SIZE + curBlockUsedSize) {
         addBlock();
     }
     // address of the record
     Address address(blockPtr, curBlockUsedSize);
-    curBlockUsedSize += recordSize;
+    curBlockUsedSize += RECORD_SIZE;
     numOfRecords++;
     return address;
 }
@@ -58,22 +60,22 @@ bool Storage::isMemoryBlockSetToZero(const char *startPtr) const {
     return true;
 }
 
-void Storage::deallocRecord(Address recordAddress, size_t recordSize) {
+void Storage::deallocRecord(Address recordAddress) {
     // free the allocated space for the record
-    memset(recordAddress.getAbsoluteAddress(), '\0', recordSize);
+    memset(recordAddress.getAbsoluteAddress(), '\0', RECORD_SIZE);
     numOfRecords--;
     if (isMemoryBlockSetToZero(recordAddress.getBlockPtr())) {
         numOfBlocks--;
     }
 }
 
-void Storage::loadRecord(Address address, size_t recordSize, char *recordBuffer) {
-    memcpy(recordBuffer, address.getAbsoluteAddress(), recordSize);
+void Storage::loadRecord(Address address, char *recordBuffer) {
+    memcpy(recordBuffer, address.getAbsoluteAddress(), RECORD_SIZE);
 }
 
-Address Storage::saveRecord(char *recordPtr, size_t recordSize) {
-    Address recordAddress = allocRecord(recordSize);
-    memcpy(recordAddress.getAbsoluteAddress(), recordPtr, recordSize);
+Address Storage::saveRecord(char *recordPtr) {
+    Address recordAddress = allocRecord();
+    memcpy(recordAddress.getAbsoluteAddress(), recordPtr, RECORD_SIZE);
     return recordAddress;
 }
 

@@ -11,6 +11,6 @@ int main()
 
     cout << storage.getNumOfRecords() << endl;
     cout << storage.getNumOfBlocks() << endl;
-    cout << sizeof(RecordMovie) << endl;
+    cout << Storage::RECORD_SIZE << endl;
     return 0;
 }

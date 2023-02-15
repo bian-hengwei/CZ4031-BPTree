@@ -10,21 +10,23 @@
 
 class Storage {
 public:
+    static size_t RECORD_SIZE;
+
     Storage(size_t diskSize, size_t blockSize);
 
     virtual ~Storage();
 
     void addBlock();
 
-    Address allocRecord(size_t recordSize);
+    Address allocRecord();
 
     bool isMemoryBlockSetToZero(const char *blockPtr) const;
 
-    void deallocRecord(Address recordAddress, size_t recordSize);
+    void deallocRecord(Address recordAddress);
 
-    static void loadRecord(Address address, size_t recordSize, char *recordBuffer);
+    static void loadRecord(Address address, char *recordBuffer);
 
-    Address saveRecord(char *recordPtr, size_t recordSize);
+    Address saveRecord(char *recordPtr);
 
     int getNumOfBlocks() const;
 
