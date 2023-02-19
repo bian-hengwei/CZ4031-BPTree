@@ -20,3 +20,25 @@ or
 chmod u+x run.sh
 ./run.sh
 ```
+
+Code Style: https://google.github.io/styleguide/cppguide.html
+
+## Project Structure
+
+### Storage
+- 100 - 500 MB
+- storage pointer
+- allocate new block
+- copy block to memory
+- write block from memory to disk
+- free block
+
+### Block
+- 200B
+- block pointer, block type
+
+### RecordBlock
+- slots
+
+### BPTreeBlock
+- behaves like vector
