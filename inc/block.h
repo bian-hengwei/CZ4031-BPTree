@@ -5,42 +5,48 @@
 #ifndef BLOCK_H
 #define BLOCK_H
 
+#include <algorithm>
 
-#include <cstddef>
-#include <vector>
 #include "config.h"
+#include "dbtypes.h"
 
-using namespace std;
+namespace block {
 
-class Block {
-public:
-    explicit Block(char *blockPtr);
+void Initialize(char *pBlock, block_type type);
 
-    virtual ~Block();
+void Free(char *pBlock);
 
-    int GetNumOfUsedSlots() const;
+bool IsEmpty(char *pBlock);
 
-    size_t GetUsedSize() const;
+block_type GetBlockType(char *pBlock);
 
-    bool isEmpty() const;
+size_type GetUsedSize(char *pBlock);
 
-    char *AllocateRecord();
+namespace record {
 
-    int FindNextSlot();
+int GetOccupiedCount(char *pBlock);
 
-    char *GetAddressBySlotIndex(int slotIndex);
+int GetEmptyCount(char *pBlock);
 
-    int GetSlotIndexByAddress(const char*address);
+char *AllocateSlot(char *pBlock);
 
-    void FreeRecord(char * recordAddress);
+void FreeSlot(char *pBlock, char *pFree);
 
-private:
-    // the pointer to the memory address where the block starts
-    char *currentBlockPtr;
-    // since we use records and blocks that have fixed size, we divide the block into multiple slots.
-    // each slot corresponds to a pointer of a record. if a record is allocated to a slot, the slot becomes 'true'.
-    vector<bool> slots;
-};
+}  // record
 
+namespace bptree {
+
+// allocate new space with specified size and return the pointer
+char *AppendSpace(char *pBlock, size_type size);
+
+// allocate space at specified pointer with specified size
+void AllocateSpace(char *pBlock, char *pDest, size_type size);
+
+// free space at specified pointer with specified size
+void FreeSpace(char *pBlock, char *pFree, size_type size);
+
+}  // bptree
+
+}  // block
 
 #endif //BLOCK_H

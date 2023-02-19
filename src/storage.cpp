@@ -1,56 +1,44 @@
 //
 // Created by Yu Song on 9/2/23.
 //
+
+#include <cstring>
 #include <iostream>
-#include <cmath>
-#include "storage.h"
+
 #include "config.h"
-#include "block.h"
+#include "storage.h"
 
-using namespace std;
-
-Storage::Storage(size_t diskSize) {
-    // Total capacity of the disk
-    this->diskSize = diskSize;
-
+Storage::Storage(size_t disk_size) : disk_size_(disk_size) {
     // allocate memory on the heap
     // pointer to the start of the memory that has been allocated
-    storagePtr = static_cast<char *>(operator new(diskSize));
+    pStorage_ = static_cast<char *>(operator new(disk_size));
     // Initialize the allocated memory
-    memset(storagePtr, '\0', diskSize);
+    memset(pStorage_, '\0', disk_size);
 }
 
-bool Storage::AddBlock() {
+Storage::~Storage() {
+    // Deallocate the memory
+    operator delete(pStorage_);
+}
+
+char *Storage::AddBlock() {
     try {
-        int numOfBlocks = getNumOfBlocks();
+        int num_of_blocks = GetNumOfBlocks();
         // Check if there is enough memory
-        if (diskSize < numOfBlocks * BLOCK_SIZE + BLOCK_SIZE) {
+        if (disk_size_ < num_of_blocks * BLOCK_SIZE + BLOCK_SIZE) {
             throw;
         }
-        char *blockPtr = storagePtr + numOfBlocks * BLOCK_SIZE;
-        blocks.emplace_back(blockPtr);
-        return true;
+        char *pBlock = pStorage_ + num_of_blocks * BLOCK_SIZE;
+        blocks_.emplace_back(pBlock);
+        return pBlock;
     } catch (...) {
         cout << "Unable to add a new block due to not insufficient storage. A null pointer is returned." << endl;
-        return false;
+        return nullptr;
     }
-}
-
-char *Storage::AllocateRecordSpace() {
-    if (blocks.empty()) {
-        AddBlock();
-        // no space in current block, create a new block
-    } else if (BLOCK_SIZE < RECORD_SIZE + blocks[blocks.size() - 1].GetUsedSize()) {
-        if (!AddBlock()) {
-            return nullptr;
-        }
-    }
-    // recordAddress of the record
-    return blocks[blocks.size() - 1].AllocateRecord();
 }
 
 int Storage::GetBlockIndexByAddress(const char *address) {
-    size_t diff = address - storagePtr;
+    size_t diff = address - pStorage_;
     // Round down the byte difference to the nearest block boundary
     size_t blockBoundaryDiff = diff % BLOCK_SIZE;
     diff -= blockBoundaryDiff;
@@ -59,55 +47,6 @@ int Storage::GetBlockIndexByAddress(const char *address) {
     return (int) (diff / BLOCK_SIZE);
 }
 
-void Storage::ReadRecord(char *recordAddress, char *targetBuffer) {
-    memcpy(targetBuffer, recordAddress, RECORD_SIZE);
+int Storage::GetNumOfBlocks() const {
+    return (int) blocks_.size();
 }
-
-char *Storage::WriteRecord(void *sourcePtr) {
-    char *recordAddress = AllocateRecordSpace();
-    memcpy(recordAddress, sourcePtr, RECORD_SIZE);
-    return recordAddress;
-}
-
-void Storage::DeleteRecord(char *recordAddress) {
-    int blockIndex = GetBlockIndexByAddress(recordAddress);
-    Block targetBlock = blocks[blockIndex];
-    targetBlock.FreeRecord(recordAddress);
-    // if block becomes empty, reduce the number of blocks;
-    if (targetBlock.isEmpty()) {
-        blocks.erase(blocks.begin() + blockIndex);
-    }
-}
-
-int Storage::getNumOfBlocks() const {
-    return (int) blocks.size();
-}
-
-int Storage::getNumOfRecords() const {
-    int count = 0;
-
-    for (const auto &block: blocks) {
-        count += block.GetNumOfUsedSlots();
-    }
-
-    return count;
-}
-
-Storage::~Storage() {
-    // Deallocate the memory
-    operator delete(storagePtr);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
