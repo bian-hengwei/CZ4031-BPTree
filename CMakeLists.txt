@@ -10,7 +10,7 @@ add_executable(CZ4031Project1
         src/main.cpp
         src/dbtypes.cpp
         src/block.cpp
-        src/storage.cpp)
+        src/storage.cpp src/bptnode.cpp src/bpt.cpp)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

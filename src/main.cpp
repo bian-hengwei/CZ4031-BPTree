@@ -5,6 +5,7 @@
 #include "config.h"
 #include "dbtypes.h"
 #include "storage.h"
+#include "bptnode.h"
 
 using namespace std;
 
@@ -58,6 +59,7 @@ int main() {
 //    cout << "Record size is: " << RECORD_SIZE << endl;
 
     cout << sizeof(RecordBlockHeader) << endl;
+    cout << sizeof(BPTNode) << endl;
 
     return 0;
 }
