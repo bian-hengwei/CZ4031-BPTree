@@ -4,6 +4,7 @@
 
 #ifndef BPT_H
 #define BPT_H
+#include "storage.h"
 
 class BPT {
 public:
@@ -11,8 +12,14 @@ public:
 
     ~BPT();
 
+    void setRoot(char *pRoot);
+
+    void initializeBPT(int[] indexlist, char*[] addresslist);
+
 private:
     char *root_;
+    bool intialized_;
+    Storage storage_;
 };
 
 #endif //BPT_H
