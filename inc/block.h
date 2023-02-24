@@ -12,40 +12,39 @@
 
 namespace block {
 
-void Initialize(char *pBlock, block_type type);
+void Initialize(char *pBlockMem, block_type type);
 
-void Free(char *pBlock);
+void Free(char *pBlockMem);
 
-bool IsEmpty(char *pBlock);
+bool IsUsed(char *pBlockMem);
 
-block_type GetBlockType(char *pBlock);
+block_type GetBlockType(char *pBlockMem);
 
-size_type GetUsedSize(char *pBlock);
+size_type GetUsedSize(char *pBlockMem);
+
+size_type GetEmptySize(char *pBlockMem);
 
 namespace record {
 
-int GetOccupiedCount(char *pBlock);
+void Initialize(char *pBlockMem);
 
-int GetEmptyCount(char *pBlock);
+int GetOccupiedCount(char *pBlockMem);
 
-char *AllocateSlot(char *pBlock);
+int GetEmptyCount(char *pBlockMem);
 
-void FreeSlot(char *pBlock, char *pFree);
+bool IsFull(char *pBlockMem);
+
+unsigned short AllocateSlot(char *pBlockMem);
+
+void FreeSlot(char *pBlockMem, unsigned short offset);
 
 }  // record
 
-namespace bptree {
+namespace bpt {
 
-// allocate new space with specified size and return the pointer
-char *AppendSpace(char *pBlock, size_type size);
+void Initialize(char *pBlockMem);
 
-// allocate space at specified pointer with specified size
-void AllocateSpace(char *pBlock, char *pDest, size_type size);
-
-// free space at specified pointer with specified size
-void FreeSpace(char *pBlock, char *pFree, size_type size);
-
-}  // bptree
+}
 
 }  // block
 

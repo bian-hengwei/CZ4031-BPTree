@@ -26,28 +26,30 @@ typedef struct RecordMovie {
 const size_type BLOCK_HEADER_SIZE = sizeof(BlockHeader);
 const size_type RECORD_SIZE = sizeof(RecordMovie);
 const size_type PACKED_RECORD_SIZE = TCONST_SIZE + sizeof(float) + sizeof(int);
-const unsigned short RECORD_PER_BLOCK = (BLOCK_SIZE - BLOCK_HEADER_SIZE) / (PACKED_RECORD_SIZE + 1);
+const unsigned short RECORD_PER_BLOCK = (BLOCK_SIZE - BLOCK_HEADER_SIZE - sizeof(unsigned short)) /
+        (PACKED_RECORD_SIZE + 1);
 
 typedef struct RecordBlockHeader {
     bool occupied[RECORD_PER_BLOCK];
-} RecordBlockHeader;  // extra 1 byte for boolean flag
+    unsigned short num_occupied;
+} RecordBlockHeader;
 
 const size_type RECORD_BLOCK_HEADER_SIZE = sizeof(RecordBlockHeader);
-const size_type RECORD_BLOCK_OFFSET = BLOCK_HEADER_SIZE + RECORD_BLOCK_HEADER_SIZE;
+const size_type RECORD_BLOCK_OFFSET_TOTAL = BLOCK_HEADER_SIZE + RECORD_BLOCK_HEADER_SIZE;
 
 namespace dbtypes {
 
 // typecasting only as block header is auto packed
-BlockHeader *ReadBlockHeader(char *pSrc);
+BlockHeader *ReadBlockHeader(char *pBlockMem);
 
 // reads 18 bytes starting from pSrc and parse into RecordMovie structure
-RecordMovie *ReadRecordMovie(char *pSrc);
+RecordMovie *ReadRecordMovie(char *pBlockMem, unsigned short offset);
 
 // pack RecordMovie structure to 18 bytes and save to pDest
-void WriteRecordMovie(char *pDest, RecordMovie *pSrc);
+void WriteRecordMovie(char *pBlockMem, unsigned short offset, RecordMovie *record_movie);
 
 // typecasting only
-RecordBlockHeader *ReadRecordBlockHeader(char *pBlock);
+RecordBlockHeader *ReadRecordBlockHeader(char *pBlockMem);
 
 }
 

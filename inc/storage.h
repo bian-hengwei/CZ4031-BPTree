@@ -21,6 +21,16 @@ public:
 
     int GetNumOfBlocks() const;
 
+    char *AllocateBlock();  // initialize some block in storage and return the pointer to storage
+
+    char *ReadBlock(char *pBlock);  // copies block from storage to memory
+
+    void WriteBlock(char *pBlock, char *pBlockMem);
+
+    void FreeBlock(char *pBlock);
+
+
+
 private:
     size_t disk_size_;
     vector<char *> blocks_;

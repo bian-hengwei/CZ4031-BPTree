@@ -3,87 +3,103 @@
 //
 
 #include <cassert>
+#include <cstring>
 
 #include "block.h"
+#include "bptnode.h"
 
 namespace block {
 
-void Initialize(char *pBlock, block_type type) {
-    BlockHeader *block_header = dbtypes::ReadBlockHeader(pBlock);
+void Initialize(char *pBlockMem, block_type type) {
+    BlockHeader *block_header = dbtypes::ReadBlockHeader(pBlockMem);
     block_header->used = true;
     block_header->type = type;
     block_header->used_size = (size_type) sizeof(BlockHeader);
 }
 
-void Free(char *pBlock) {
-    BlockHeader *block_header = dbtypes::ReadBlockHeader(pBlock);
+void Free(char *pBlockMem) {
+    BlockHeader *block_header = dbtypes::ReadBlockHeader(pBlockMem);
     block_header->used = false;
     block_header->type = BlockType::UNUSED;
     block_header->used_size = (size_type) 0;
 }
 
-bool IsEmpty(char *pBlock) {
-    return dbtypes::ReadBlockHeader(pBlock)->used;
+bool IsUsed(char *pBlockMem) {
+    return dbtypes::ReadBlockHeader(pBlockMem)->used;
 }
 
-block_type GetBlockType(char *pBlock) {
-    return dbtypes::ReadBlockHeader(pBlock)->type;
+block_type GetBlockType(char *pBlockMem) {
+    return dbtypes::ReadBlockHeader(pBlockMem)->type;
 }
 
-size_type GetUsedSize(char *pBlock) {
-    return dbtypes::ReadBlockHeader(pBlock)->used_size;
+size_type GetUsedSize(char *pBlockMem) {
+    return dbtypes::ReadBlockHeader(pBlockMem)->used_size;
+}
+
+size_type GetEmptySize(char *pBlockMem) {
+    return BLOCK_SIZE - GetUsedSize(pBlockMem);
 }
 
 namespace record {
 
-int GetOccupiedCount(char *pBlock) {
-    RecordBlockHeader *record_block_header = dbtypes::ReadRecordBlockHeader(pBlock);
-    return (int) std::count(record_block_header->occupied,
-                            record_block_header->occupied + RECORD_PER_BLOCK, true);
+void Initialize(char *pBlockMem) {
+    BlockHeader *block_header = dbtypes::ReadBlockHeader(pBlockMem);
+    block_header->used_size += RECORD_BLOCK_HEADER_SIZE;
+    std::memset(pBlockMem + BLOCK_HEADER_SIZE, 0, RECORD_BLOCK_HEADER_SIZE);
 }
 
-int GetEmptyCount(char *pBlock) {
-    RecordBlockHeader *record_block_header = dbtypes::ReadRecordBlockHeader(pBlock);
-    return (int) std::count(record_block_header->occupied,
-                            record_block_header->occupied + RECORD_PER_BLOCK, false);
+int GetOccupiedCount(char *pBlockMem) {
+    RecordBlockHeader *record_block_header = dbtypes::ReadRecordBlockHeader(pBlockMem);
+    return record_block_header->num_occupied;
 }
 
-char *AllocateSlot(char *pBlock) {
-    RecordBlockHeader *record_block_header = dbtypes::ReadRecordBlockHeader(pBlock);
+int GetEmptyCount(char *pBlockMem) {
+    return RECORD_PER_BLOCK - GetOccupiedCount(pBlockMem);
+}
+
+bool IsFull(char *pBlockMem) {
+    return GetEmptyCount(pBlockMem) == 0;
+}
+
+unsigned short AllocateSlot(char *pBlockMem) {
+    BlockHeader *block_header = dbtypes::ReadBlockHeader(pBlockMem);
+    RecordBlockHeader *record_block_header = dbtypes::ReadRecordBlockHeader(pBlockMem);
+    assert(record_block_header->num_occupied < RECORD_PER_BLOCK);
     for (int i = 0; i < RECORD_PER_BLOCK; i++) {
         if (record_block_header->occupied[i]) {}
         else {
+            block_header->used_size += PACKED_RECORD_SIZE;
             record_block_header->occupied[i] = true;
-            return pBlock + RECORD_BLOCK_OFFSET + PACKED_RECORD_SIZE * i;
+            record_block_header->num_occupied++;
+            return RECORD_BLOCK_OFFSET_TOTAL + PACKED_RECORD_SIZE * i;
         }
     }
-    assert(false);
-    return nullptr;
+    return -1;
 }
 
-void FreeSlot(char *pBlock, char *pFree) {
-    RecordBlockHeader *record_block_header = dbtypes::ReadRecordBlockHeader(pBlock);
-    int pFree_offset = pFree - pBlock;
-    assert(RECORD_BLOCK_OFFSET < pFree_offset);
-    assert(pFree_offset < BLOCK_SIZE);
-    int pFree_index = (pFree_offset - RECORD_BLOCK_OFFSET) / PACKED_RECORD_SIZE;
-    assert(0 < pFree_index and pFree_index < RECORD_PER_BLOCK);
-    assert(pFree_index * PACKED_RECORD_SIZE + RECORD_BLOCK_OFFSET == pFree_offset);
-    record_block_header->occupied[pFree_index] = false;
+void FreeSlot(char *pBlockMem, unsigned short offset) {
+    BlockHeader *block_header = dbtypes::ReadBlockHeader(pBlockMem);
+    RecordBlockHeader *record_block_header = dbtypes::ReadRecordBlockHeader(pBlockMem);
+    assert(RECORD_BLOCK_OFFSET_TOTAL <= offset);  // does not try to free the headers
+    assert(offset <= BLOCK_SIZE - RECORD_SIZE);  // does not try to free outside the block
+    assert((offset - RECORD_BLOCK_OFFSET_TOTAL) % PACKED_RECORD_SIZE == 0);  // not in the middle of a record
+    int index = ((offset - RECORD_BLOCK_OFFSET_TOTAL) / PACKED_RECORD_SIZE);
+    assert(record_block_header->occupied[index]);
+    block_header->used_size -= PACKED_RECORD_SIZE;
+    record_block_header->occupied[index] = false;
+    record_block_header->num_occupied--;
 }
 
 }  // record
 
-namespace bptree {
+namespace bpt {
 
-char *AppendSpace(char *pBlock, size_type size) {
-    return nullptr;
+void Initialize(char *pBlockMem) {
+    BlockHeader *block_header = dbtypes::ReadBlockHeader(pBlockMem);
+    block_header->used_size += RECORD_BLOCK_HEADER_SIZE;
+    std::memset(pBlockMem + BLOCK_HEADER_SIZE, 0, NODE_HEAD_SIZE);
 }
 
-void AllocateSpace(char *pBlock, char *pDest, size_type size) {}
-
-void FreeSpace(char *pBlock, char *pFree, size_type size) {}
-
-}  // bptree
+}// bpt
 
 }  // block
