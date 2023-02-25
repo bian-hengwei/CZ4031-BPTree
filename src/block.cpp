@@ -41,10 +41,10 @@ size_type GetEmptySize(char *pBlockMem) {
 }
 
 namespace record {
-    /**
-     * Initialize RecordBlockHeader, increment used_size
-     * @param pBlockMem
-     */
+/**
+ * Initialize RecordBlockHeader, increment used_size
+ * @param pBlockMem
+ */
 void Initialize(char *pBlockMem) {
     BlockHeader *block_header = dbtypes::ReadBlockHeader(pBlockMem);
     block_header->used_size += RECORD_BLOCK_HEADER_SIZE;
