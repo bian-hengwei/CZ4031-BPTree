@@ -7,7 +7,11 @@
 
 #include <vector>
 
-BPT::BPT(char *pRoot, Storage storage) : root_(pRoot), initialized_(false), storage_(storage) {}
+BPT::BPT(char *pRoot, Storage storage) {
+    this -> root_ = pRoot;
+    this -> storage_ = storage;
+    this -> intialized_ = false;
+}
 
 BPT::~BPT() = default;
 
@@ -15,10 +19,21 @@ void BPT::setRoot(char *pRoot){
     this->root_ = pRoot;
 }
 
+char BPT::getRoot(){
+    return this->root_;
+}
+
+void BPT::setInitialized(bool initialvalue){
+    this -> intialized_ = initialvalue;
+}
+
+bool BPT::getInitialized(){
+    return this->intialized_;
+}
+
 // Keylist and addresslist are sorted
 void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist){
-    if (intialized_){
-        std::cout << "Already initialized!" << endl;
+    if (getInitialized()){
         return;
     }
     int maxKeyCount = MAX_KEYS;
@@ -29,12 +44,12 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist){
     vector<int> lowerbounds;
     vector<int> templowerbounds;
     size_t count = 0;
-    BPTNode leafnode = new BPTNode(root_);
+    BPTNode leafnode = new BPTNode(getRoot());
     BPTNode prevNode;
     int curKeyCount = 0;
     bool setmax = false;
     //Initialize leaf nodes
-    addresses.push_back(root_);
+    addresses.push_back(getRoot());
     while (count < keylist.size()){
         if (leafnode.GetNumKeys() == maxKeyCount){
             
@@ -106,7 +121,8 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist){
             tempaddresses.clear();
             lowerbounds.clear();
         }
-        root_ = addresses[0];
+        setRoot(addresses[0]);
+        setInitialized(true);
     }
 
     
