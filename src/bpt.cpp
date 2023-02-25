@@ -7,4 +7,3 @@
 BPT::BPT(char *pRoot) : root_(pRoot) {}
 
 BPT::~BPT() = default;
-
