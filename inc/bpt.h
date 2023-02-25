@@ -9,7 +9,7 @@
 
 class BPT {
 public:
-    explicit BPT(char *pRoot);
+    explicit BPT(char *pRoot, Storage storage);
 
     ~BPT();
 
@@ -21,7 +21,7 @@ public:
 
     bool getInitialized();
 
-    void initializeBPT(int[] indexlist, char*[] addresslist);
+    void initializeBPT(vector<int> keylist, vector<char *> addresslist);
 
 private:
     char *root_;

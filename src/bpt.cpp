@@ -6,12 +6,9 @@
 #include "bptnode.h"
 
 #include <vector>
+#include <math.h>
 
-BPT::BPT(char *pRoot, Storage storage) {
-    this -> root_ = pRoot;
-    this -> storage_ = storage;
-    this -> intialized_ = false;
-}
+BPT::BPT(char *pRoot, Storage storage) : root_(pRoot), intialized_(false), storage_(storage){}
 
 BPT::~BPT() = default;
 
@@ -19,7 +16,7 @@ void BPT::setRoot(char *pRoot) {
     this->root_ = pRoot;
 }
 
-char BPT::getRoot(){
+char *BPT::getRoot(){
     return this->root_;
 }
 
@@ -37,26 +34,23 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist){
         return;
     }
     int maxKeyCount = MAX_KEYS;
-    vector<BPTNode *> nodes;
-    vector<BPTNode *> tempnodes;
+    vector<BPTNode*> nodes;
+    vector<BPTNode*> tempnodes;
     vector<char *> addresses;
     vector<char *> tempaddresses;
     vector<int> lowerbounds;
     vector<int> templowerbounds;
     size_t count = 0;
-    BPTNode leafnode = new BPTNode(getRoot());
-    BPTNode prevNode;
+    BPTNode * leafnode = new BPTNode(getRoot());
+    BPTNode *nonleafNode;
     int curKeyCount = 0;
     bool setmax = false;
     //Initialize leaf nodes
     addresses.push_back(getRoot());
     while (count < keylist.size()){
-        if (leafnode.GetNumKeys() == maxKeyCount){
-            
-            
-            prevNode = leafnode;
+        if (leafnode -> GetNumKeys() == maxKeyCount){
             char *nodeAddress = storage_.AddBlock();
-            leafnode.SetChild(MAX_KEYS, nodeAddress);
+            leafnode -> SetChild(MAX_KEYS, nodeAddress);
             leafnode = new BPTNode(nodeAddress);
             nodes.push_back(leafnode);
             addresses.push_back(nodeAddress);
@@ -73,7 +67,8 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist){
                 }
             }
         }
-        leafnode.Insert(curKeyCount, keylist[count], addresslist[count]);
+        leafnode -> InsertKey(curKeyCount, keylist[count]);
+        leafnode ->InsertChild(curKeyCount, addresslist[count]);
         curKeyCount++;
         count++;
     }
@@ -83,18 +78,17 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist){
         setmax = false;
         count = 0;
         char *nodeAddress = storage_.AddBlock();
-        BPTNode nonleafNode = new BPTNode(nodeAddress);
-        nonleafNode.SetChild(0, addresses[0]);
+        nonleafNode = new BPTNode(nodeAddress);
+        nonleafNode -> SetChild(0, addresses[0]);
         tempaddresses.push_back(nodeAddress);
         curKeyCount = 0;
         for (int i = 0; i < nodes.size(); i++) {
-            if (nonleafNode.GetNumKeys() == maxKeyCount) {
-                prevNode = nonleafNode;
+            if (nonleafNode -> GetNumKeys() == maxKeyCount) {
 
                 char *nodeAddress = storage_.AddBlock();
-                BPTNode nonleafNode = new BPTNode(nodeAddress);
+                nonleafNode = new BPTNode(nodeAddress);
                 tempaddresses.push_back(nodeAddress);
-                nonleafNode.InsertChild(0, addresses[i + 1]);
+                nonleafNode -> InsertChild(0, addresses[i + 1]);
                 templowerbounds.push_back(lowerbounds[i]);
                 tempnodes.push_back(nonleafNode);
                 curKeyCount = 0;
@@ -108,8 +102,8 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist){
                     }
                 }
             } else {
-                nonleafNode.InsertKey(curKeyCount, lowerbounds[i]);
-                nonleafNode.InsertChild(curKeyCount + 1, addresses[i + 1]);
+                nonleafNode -> InsertKey(curKeyCount, lowerbounds[i]);
+                nonleafNode -> InsertChild(curKeyCount + 1, addresses[i + 1]);
                 curKeyCount++;
             }
 
