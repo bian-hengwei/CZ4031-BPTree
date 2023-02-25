@@ -27,7 +27,7 @@ const size_type BLOCK_HEADER_SIZE = sizeof(BlockHeader);
 const size_type RECORD_SIZE = sizeof(RecordMovie);
 const size_type PACKED_RECORD_SIZE = TCONST_SIZE + sizeof(float) + sizeof(int);
 const unsigned short RECORD_PER_BLOCK = (BLOCK_SIZE - BLOCK_HEADER_SIZE - sizeof(unsigned short)) /
-        (PACKED_RECORD_SIZE + 1);
+                                        (PACKED_RECORD_SIZE + 1);
 
 typedef struct RecordBlockHeader {
     bool occupied[RECORD_PER_BLOCK];
