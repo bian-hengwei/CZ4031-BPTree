@@ -15,7 +15,6 @@ public:
 
     void setRoot(char *pRoot);
 
-<<<<<<< HEAD
     char *getRoot();
 
     void setInitialized(bool initialvalue);
@@ -23,9 +22,6 @@ public:
     bool getInitialized();
 
     void initializeBPT(int[] indexlist, char*[] addresslist);
-=======
-    void initializeBPT(int[] indexlist, char *[] addresslist);
->>>>>>> ef1179ff35c019b5c955017ca74dd1bee8161c9f
 
 private:
     char *root_;

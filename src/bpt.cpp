@@ -32,14 +32,8 @@ bool BPT::getInitialized(){
 }
 
 // Keylist and addresslist are sorted
-<<<<<<< HEAD
 void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist){
     if (getInitialized()){
-=======
-void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
-    if (intialized_) {
-        std::cout << "Already initialized!" << endl;
->>>>>>> ef1179ff35c019b5c955017ca74dd1bee8161c9f
         return;
     }
     int maxKeyCount = MAX_KEYS;
@@ -55,19 +49,11 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
     int curKeyCount = 0;
     bool setmax = false;
     //Initialize leaf nodes
-<<<<<<< HEAD
     addresses.push_back(getRoot());
     while (count < keylist.size()){
         if (leafnode.GetNumKeys() == maxKeyCount){
             
             
-=======
-    addresses.push_back(root_);
-    while (count < keylist.size()) {
-        if (leafnode.GetNumKeys() == maxKeyCount) {
-
-
->>>>>>> ef1179ff35c019b5c955017ca74dd1bee8161c9f
             prevNode = leafnode;
             char *nodeAddress = storage_.AddBlock();
             leafnode.SetChild(MAX_KEYS, nodeAddress);
