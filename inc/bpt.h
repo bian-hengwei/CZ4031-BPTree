@@ -14,6 +14,12 @@ public:
 
     void setRoot(char *pRoot);
 
+    char *getRoot();
+
+    void setInitialized(bool initialvalue);
+
+    bool getInitialized();
+
     void initializeBPT(int[] indexlist, char*[] addresslist);
 
 private:
