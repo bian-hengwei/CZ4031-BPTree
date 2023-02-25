@@ -5,8 +5,6 @@
 #ifndef BPT_H
 #define BPT_H
 
-#include "storage.h"
-
 class BPT {
 public:
     explicit BPT(char *pRoot);
