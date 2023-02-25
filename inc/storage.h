@@ -15,20 +15,23 @@ public:
 
     ~Storage();
 
-    char *AddBlock();
-
-    int GetBlockIndexByAddress(const char *address);
-
     int GetNumOfBlocks() const;
+
+    int GetNumOfRecords() const;
+
+    bool IsLatestBlockFull();
+
+    char *GetBlockByIndex(int index);
+
+    char *GetLatestBlock();
 
     char *AllocateBlock();  // initialize some block in storage and return the pointer to storage
 
-    char *ReadBlock(char *pBlock);  // copies block from storage to memory
+    static void ReadBlock(char *pBuffer, char *pBlock);  // copies block from storage to memory
 
-    void WriteBlock(char *pBlock, char *pBlockMem);
+    static void WriteBlock(char *pBlock, char *pBuffer);
 
     void FreeBlock(char *pBlock);
-
 
 private:
     size_t disk_size_;
