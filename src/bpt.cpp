@@ -11,13 +11,13 @@ BPT::BPT(char *pRoot, Storage storage) : root_(pRoot), initialized_(false), stor
 
 BPT::~BPT() = default;
 
-void BPT::setRoot(char *pRoot){
+void BPT::setRoot(char *pRoot) {
     this->root_ = pRoot;
 }
 
 // Keylist and addresslist are sorted
-void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist){
-    if (intialized_){
+void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
+    if (intialized_) {
         std::cout << "Already initialized!" << endl;
         return;
     }
@@ -35,10 +35,10 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist){
     bool setmax = false;
     //Initialize leaf nodes
     addresses.push_back(root_);
-    while (count < keylist.size()){
-        if (leafnode.GetNumKeys() == maxKeyCount){
-            
-            
+    while (count < keylist.size()) {
+        if (leafnode.GetNumKeys() == maxKeyCount) {
+
+
             prevNode = leafnode;
             char *nodeAddress = storage_.AddBlock();
             leafnode.SetChild(MAX_KEYS, nodeAddress);
@@ -49,11 +49,11 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist){
             curKeyCount = 0;
 
             //ensure minimum no of keys
-            if((keylist.size() - count) <= (2*maxKeyCount)){
-                if (!setmax){
+            if ((keylist.size() - count) <= (2 * maxKeyCount)) {
+                if (!setmax) {
                     setmax = true;
-                    if ((keylist.size() - count - maxKeyCount) < floor((maxKeyCount + 1)/2)){
-                        maxKeyCount = keylist.size() - count - floor((maxKeyCount + 1)/2);
+                    if ((keylist.size() - count - maxKeyCount) < floor((maxKeyCount + 1) / 2)) {
+                        maxKeyCount = keylist.size() - count - floor((maxKeyCount + 1) / 2);
                     }
                 }
             }
@@ -62,8 +62,8 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist){
         curKeyCount++;
         count++;
     }
-    
-    while (nodes.size() > 0){
+
+    while (nodes.size() > 0) {
         maxKeyCount = MAX_KEYS;
         setmax = false;
         count = 0;
@@ -72,28 +72,27 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist){
         nonleafNode.SetChild(0, addresses[0]);
         tempaddresses.push_back(nodeAddress);
         curKeyCount = 0;
-        for (int i = 0; i<nodes.size(); i++){
-            if (nonleafNode.GetNumKeys() == maxKeyCount){
-                    prevNode = nonleafNode;
-                    
-                    char *nodeAddress = storage_.AddBlock();
-                    BPTNode nonleafNode = new BPTNode(nodeAddress);
-                    tempaddresses.push_back(nodeAddress);
-                    nonleafNode.InsertChild(0, addresses[i + 1]);
-                    templowerbounds.push_back(lowerbounds[i]);
-                    tempnodes.push_back(nonleafNode);
-                    curKeyCount = 0;
+        for (int i = 0; i < nodes.size(); i++) {
+            if (nonleafNode.GetNumKeys() == maxKeyCount) {
+                prevNode = nonleafNode;
 
-                    if((keylist.size() - count) <= (2*(maxKeyCount+1))){
-                        if (!setmax){
-                            setmax = true;
-                            if ((keylist.size() - count - maxKeyCount - 1) < (floor((maxKeyCount)/2) + 1)){
-                                maxKeyCount = keylist.size() - count - floor((maxKeyCount)/2) - 1;
-                            }
+                char *nodeAddress = storage_.AddBlock();
+                BPTNode nonleafNode = new BPTNode(nodeAddress);
+                tempaddresses.push_back(nodeAddress);
+                nonleafNode.InsertChild(0, addresses[i + 1]);
+                templowerbounds.push_back(lowerbounds[i]);
+                tempnodes.push_back(nonleafNode);
+                curKeyCount = 0;
+
+                if ((keylist.size() - count) <= (2 * (maxKeyCount + 1))) {
+                    if (!setmax) {
+                        setmax = true;
+                        if ((keylist.size() - count - maxKeyCount - 1) < (floor((maxKeyCount) / 2) + 1)) {
+                            maxKeyCount = keylist.size() - count - floor((maxKeyCount) / 2) - 1;
                         }
                     }
-            }
-            else {
+                }
+            } else {
                 nonleafNode.InsertKey(curKeyCount, lowerbounds[i]);
                 nonleafNode.InsertChild(curKeyCount + 1, addresses[i + 1]);
                 curKeyCount++;
@@ -109,8 +108,5 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist){
         root_ = addresses[0];
     }
 
-    
-    
-    
 
 }

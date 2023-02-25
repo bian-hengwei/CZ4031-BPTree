@@ -64,8 +64,8 @@ int main() {
     char *pBlock = static_cast<char *>(operator new(BLOCK_SIZE));
     char *pBlockMem = static_cast<char *>(operator new(BLOCK_SIZE));
 
-    cout << "pblock " << static_cast<void*>(pBlock) << endl;
-    cout << "pblockmem " << static_cast<void*>(pBlockMem) << endl << endl;
+    cout << "pblock " << static_cast<void *>(pBlock) << endl;
+    cout << "pblockmem " << static_cast<void *>(pBlockMem) << endl << endl;
 
     std::memcpy(pBlockMem, pBlock, BLOCK_SIZE);
 
@@ -83,7 +83,7 @@ int main() {
     unsigned short slot = block::record::AllocateSlot(pBlockMem);
     dbtypes::WriteRecordMovie(pBlockMem, slot, record_movie);
 
-    cout << "pblockmem used size " << block::GetUsedSize(pBlockMem) << endl  << endl;
+    cout << "pblockmem used size " << block::GetUsedSize(pBlockMem) << endl << endl;
 
     std::memcpy(pBlock, pBlockMem, BLOCK_SIZE);
     pBlockMem = static_cast<char *>(operator new(BLOCK_SIZE));
@@ -92,9 +92,9 @@ int main() {
 
     record_movie = dbtypes::ReadRecordMovie(pBlockMem, slot);
     cout << "current record read -- tconst: " << record_movie->tconst
-        << " avgRating: " << record_movie->avg_rating
-        << " numVotes: " << record_movie->num_votes
-        << endl;
+         << " avgRating: " << record_movie->avg_rating
+         << " numVotes: " << record_movie->num_votes
+         << endl;
 
     block::record::FreeSlot(pBlockMem, slot);
     cout << "pblockmem used size " << block::GetUsedSize(pBlockMem) << endl << endl;

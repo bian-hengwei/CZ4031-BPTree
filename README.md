@@ -26,6 +26,7 @@ Code Style: https://google.github.io/styleguide/cppguide.html
 ## Project Structure
 
 ### Storage
+
 - 100 - 500 MB
 - storage pointer
 - allocate new block
@@ -34,11 +35,14 @@ Code Style: https://google.github.io/styleguide/cppguide.html
 - free block
 
 ### Block
+
 - 200B
 - block pointer, block type
 
 ### RecordBlock
+
 - slots
 
 ### BPTreeBlock
+
 - behaves like vector
