@@ -17,7 +17,7 @@ RecordMovie *ReadRecordMovie(char *pBlockMem, unsigned short offset) {
     assert(RECORD_BLOCK_OFFSET_TOTAL <= offset);
     assert(offset <= BLOCK_SIZE - RECORD_SIZE);
     assert((offset - RECORD_BLOCK_OFFSET_TOTAL) % PACKED_RECORD_SIZE == 0);
-    RecordMovie *record_movie = new RecordMovie();
+    auto *record_movie = new RecordMovie();
     std::strncpy(record_movie->tconst, pBlockMem + offset, TCONST_SIZE);
     record_movie->avg_rating = *(float *) (pBlockMem + offset + TCONST_SIZE);
     record_movie->num_votes = *(unsigned int *) (pBlockMem + offset + TCONST_SIZE + sizeof(float));

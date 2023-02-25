@@ -14,7 +14,7 @@ typedef struct BPTNodeHead {
 
 const int NODE_HEAD_SIZE = sizeof(BPTNodeHead);
 const int MAX_KEYS = (BLOCK_SIZE - BLOCK_HEADER_SIZE - NODE_HEAD_SIZE - sizeof(void *)) /
-        (sizeof(int) + sizeof(void *));
+                     (sizeof(int) + sizeof(void *));
 
 class BPTNode {
 public:

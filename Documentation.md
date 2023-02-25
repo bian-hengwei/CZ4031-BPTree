@@ -16,37 +16,48 @@ We access anything inside blocks using offset (with type unsigned short).
 
 We access anything inside bptnode using index (with type unsigned short).
 
-**THINGS TO NOTE:** Although we use the copy of the block, we need to store the address / pointers of the original block. Either a address conversion function or some extra variables would help.
+**THINGS TO NOTE:** Although we use the copy of the block, we need to store the address / pointers of the original
+block. Either a address conversion function or some extra variables would help.
 
 ## Files
 
 ### config.h
+
 Basic project configurations, including some pre-set constants
 
 ### dbtypes.h
+
 Structures and related constants used in the database system
 
-`size_type` is used to replace the built-in `size_t`. `size_type` is of type `unsigned short`, so it saves space compared to `size_t` which is defined to be `unsigned long`. **NOTE THAT THIS STORES SIZE IN NUMBER OF BYTES, NOT IN OTHER UNITS**
+`size_type` is used to replace the built-in `size_t`. `size_type` is of type `unsigned short`, so it saves space
+compared to `size_t` which is defined to be `unsigned long`. **NOTE THAT THIS STORES SIZE IN NUMBER OF BYTES, NOT IN
+OTHER UNITS**
 
-enum `BlockType`, with its alias block_type, specifies the type of a specific block, being one of `UNUSED`, `RECORD`, `BPTREE`. It is stored in `BlockHeader` structure.
+enum `BlockType`, with its alias block_type, specifies the type of a specific block, being one
+of `UNUSED`, `RECORD`, `BPTREE`. It is stored in `BlockHeader` structure.
 
 `BlockHeader` is stored at the start of any "Block". It stores the following attributes:
+
 - `bool used` whether this block is currently used
 - `block_type type` refers to enum `BlockType`
 - `size_type used_size` stores how many bytes are occupied in this block
-Note that `BlockHeader` is modified using bit fields so that it saves more space
+  Note that `BlockHeader` is modified using bit fields so that it saves more space
 
 `RecordMovie` is the struct for a record. It stores the following attributes:
-**NOTE THAT THIS STRUCT IS NOT DIRECTLY STORED IN BLOCKS. THIS IS FOR EASY READ/WRITE ONLY. PARSING IS NEEDED USING `ReadRecordMovie` AND `WriteRecordMovie`**
+**NOTE THAT THIS STRUCT IS NOT DIRECTLY STORED IN BLOCKS. THIS IS FOR EASY READ/WRITE ONLY. PARSING IS NEEDED
+USING `ReadRecordMovie` AND `WriteRecordMovie`**
+
 - ttconst
 - avgRating
 - numVotes
 
 `RecordBlockHeader` is stored after `BlockHeader` if the "Block" has type `BlockType::RECORD`. It stores:
+
 - a boolean array indicating the status of each record slot, whether occupied or not
 - an unsigned short storing the total number of occupied slots
 
 ### dbtypes.cpp
+
 Functions related to structures in dbtypes.h
 
 `ReadBlockHeader`
@@ -65,9 +76,11 @@ In: pointer to block (memonly)
 Out: record header of the block
 
 ### block.h
+
 Header file for initializing functions used to operate a block pointer (memonly)
 
 ### block.cpp
+
 Functions used to operate a block pointer (memonly)
 
 #### namespace block - shared functions of record blocks and bpt blocks
@@ -101,9 +114,11 @@ Out: offset of record slot allocated
 `FreeSlot` - Mark the record slot as unoccupied, modify headers
 
 ### bptnode.h
+
 Header for bptnode.cpp
 
 ### bptnode.cpp
+
 Each bptnode is stored in a block.
 The block is organized as: (MAX_KEYS = 14)
 BlockHeader (2B) - BPTNodeHead (16B) - keys (4B $\times$ 14) - children (8B $\times$ 15)

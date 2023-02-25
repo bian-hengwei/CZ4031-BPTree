@@ -7,6 +7,7 @@
 
 #include "config.h"
 #include "storage.h"
+#include "block.h"
 
 Storage::Storage(size_t disk_size) : disk_size_(disk_size) {
     // allocate memory on the heap
@@ -21,7 +22,7 @@ Storage::~Storage() {
     operator delete(pStorage_);
 }
 
-char *Storage::AddBlock() {
+char *Storage::AllocateBlock() {
     try {
         int num_of_blocks = GetNumOfBlocks();
         // Check if there is enough memory
@@ -37,16 +38,55 @@ char *Storage::AddBlock() {
     }
 }
 
-int Storage::GetBlockIndexByAddress(const char *address) {
-    size_t diff = address - pStorage_;
-    // Round down the byte difference to the nearest block boundary
-    size_t blockBoundaryDiff = diff % BLOCK_SIZE;
-    diff -= blockBoundaryDiff;
-
-    // Calculate the block index by dividing the rounded-down byte difference by the block size
-    return (int) (diff / BLOCK_SIZE);
+/**
+ * Read a block to a given buffer address
+ * @param pBuffer address of the buffer
+ * @param pBlock address of the block in the storage
+ */
+void Storage::ReadBlock(char *pBuffer, char *pBlock) {
+    memcpy(pBuffer, pBlock, BLOCK_SIZE);
 }
 
 int Storage::GetNumOfBlocks() const {
     return (int) blocks_.size();
 }
+
+void Storage::WriteBlock(char *pBlock, char *pBuffer) {
+    memcpy(pBlock, pBuffer, BLOCK_SIZE);
+}
+
+void Storage::FreeBlock(char *pBlock) {
+    block::Free(pBlock);
+    auto it = find(blocks_.begin(), blocks_.end(), pBlock);
+    if (it != blocks_.end()) {
+        blocks_.erase(it);
+    }
+}
+
+int Storage::GetNumOfRecords() const {
+    int count = 0;
+    for (const auto &block: blocks_) {
+        count += block::record::GetOccupiedCount(block);
+    }
+    return count;
+}
+
+bool Storage::IsLatestBlockFull() {
+    return block::record::IsFull(blocks_[blocks_.size() - 1]);
+}
+
+char *Storage::GetLatestBlock() {
+    return blocks_[blocks_.size() - 1];
+}
+
+char *Storage::GetBlockByIndex(int index) {
+    if (index >= 0 && index < blocks_.size()) {
+        return blocks_[index];
+    }
+    return nullptr;
+}
+
+
+
+
+

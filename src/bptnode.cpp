@@ -4,9 +4,9 @@
 #include "bptnode.h"
 
 BPTNode::BPTNode(char *pBlockMem) : pBlockMem_(pBlockMem) {
-    bpt_node_head_ = (BPTNodeHead *)(pBlockMem + BLOCK_HEADER_SIZE);
-    keys_ = (int *)(pBlockMem + BLOCK_HEADER_SIZE + NODE_HEAD_SIZE);
-    children_ = (char **)(pBlockMem + BLOCK_HEADER_SIZE + NODE_HEAD_SIZE + sizeof(int) * MAX_KEYS);
+    bpt_node_head_ = (BPTNodeHead *) (pBlockMem + BLOCK_HEADER_SIZE);
+    keys_ = (int *) (pBlockMem + BLOCK_HEADER_SIZE + NODE_HEAD_SIZE);
+    children_ = (char **) (pBlockMem + BLOCK_HEADER_SIZE + NODE_HEAD_SIZE + sizeof(int) * MAX_KEYS);
 }
 
 BPTNode::~BPTNode() = default;
