@@ -33,6 +33,8 @@ public:
 
     void FreeBlock(char *pBlock);
 
+    char *FindSpaceForBlock();
+
 private:
     size_t disk_size_;
     vector<char *> blocks_;
