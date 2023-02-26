@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <math.h>
+#include <cassert>
 
 BPT::BPT(char *pRoot, Storage storage) : root_(pRoot), intialized_(false), storage_(storage) {}
 
@@ -38,6 +39,7 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
     vector<BPTNode *> tempnodes;
     vector<char *> addresses;
     vector<char *> tempaddresses;
+    // lowerbounds will be used later for inserting keys of 2nd and above levels.
     vector<int> lowerbounds;
     vector<int> templowerbounds;
     size_t count = 0;
@@ -47,8 +49,10 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
     bool setmax = false;
     //Initialize leaf nodes
     addresses.push_back(getRoot());
+    // note that we do not push the first node of each level into the nodes vector.
+    // This is because while we need the first node address, we do not need the actual node
     while (count < keylist.size()) {
-        if (leafnode->GetNumKeys() == maxKeyCount) {
+        if (curKeyCount == maxKeyCount) {
             char *nodeAddress = storage_.AllocateBlock();
             leafnode->SetChild(MAX_KEYS, nodeAddress);
             leafnode = new BPTNode(nodeAddress);
@@ -72,32 +76,48 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
         curKeyCount++;
         count++;
     }
+    if (nodes.size()>0){
+        assert(curKeyCount>=floor((maxKeyCount + 1) / 2));
+    }
 
+    // Recursively create levels. If nodes.size == 0, means that only one node in the level.
     while (nodes.size() > 0) {
         maxKeyCount = MAX_KEYS;
         setmax = false;
         count = 0;
         char *nodeAddress = storage_.AllocateBlock();
         nonleafNode = new BPTNode(nodeAddress);
+
+        // Here we
         nonleafNode->SetChild(0, addresses[0]);
         tempaddresses.push_back(nodeAddress);
         curKeyCount = 0;
         for (int i = 0; i < nodes.size(); i++) {
-            if (nonleafNode->GetNumKeys() == maxKeyCount) {
+            if (curKeyCount == maxKeyCount) {
 
                 char *nodeAddress = storage_.AllocateBlock();
                 nonleafNode = new BPTNode(nodeAddress);
                 tempaddresses.push_back(nodeAddress);
+
+
+                // Insert the first pointer everytime we create a node and continue.
+                // Note that since we also added an extra address in the addresses vector every loop, (the first one)
+                // the corresponding index of the address to the node is i + 1.
                 nonleafNode->InsertChild(0, addresses[i + 1]);
+
+                // Pay attention to this section. The relevant index of the node that
+                // the first pointer of the node points to is inserted in lowerbounds instead of the first key.
                 templowerbounds.push_back(lowerbounds[i]);
+
                 tempnodes.push_back(nonleafNode);
                 curKeyCount = 0;
 
-                if ((keylist.size() - count) <= (2 * (maxKeyCount + 1))) {
+                // this ensures the minimum amount of keys.
+                if ((nodes.size() - i) <= (2 * (maxKeyCount) + 1)) {
                     if (!setmax) {
                         setmax = true;
-                        if ((keylist.size() - count - maxKeyCount - 1) < (floor((maxKeyCount) / 2) + 1)) {
-                            maxKeyCount = keylist.size() - count - floor((maxKeyCount) / 2) - 1;
+                        if ((nodes.size() - i - maxKeyCount) < (floor((maxKeyCount) / 2) + 1)) {
+                            maxKeyCount = nodes.size() - i - floor((maxKeyCount) / 2) - 1;
                         }
                     }
                 }
@@ -106,17 +126,19 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
                 nonleafNode->InsertChild(curKeyCount + 1, addresses[i + 1]);
                 curKeyCount++;
             }
-
-            vector<BPTNode *> nodes(tempnodes);
-            vector<char *> addresses(tempaddresses);
-            vector<int> lowerbounds(templowerbounds);
-            tempnodes.clear();
-            tempaddresses.clear();
-            lowerbounds.clear();
         }
-        setRoot(addresses[0]);
-        setInitialized(true);
-    }
+        vector<BPTNode *> nodes(tempnodes);
+        vector<char *> addresses(tempaddresses);
+        vector<int> lowerbounds(templowerbounds);
+        tempnodes.clear();
+        tempaddresses.clear();
+        lowerbounds.clear();
 
+        if (nodes.size()>0){
+            assert(curKeyCount>=floor((maxKeyCount) / 2));
+        }
+    }
+    setRoot(addresses[0]);
+    setInitialized(true);
 
 }
