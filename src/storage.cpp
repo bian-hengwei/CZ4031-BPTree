@@ -17,10 +17,11 @@ Storage::Storage(size_t disk_size) : disk_size_(disk_size) {
     memset(pStorage_, '\0', disk_size);
 }
 
-Storage::~Storage() {
-    // Deallocate the memory
-    operator delete(pStorage_);
-}
+Storage::~Storage() = default;
+//{
+//    // Deallocate the memory
+//    operator delete(pStorage_);
+//}
 
 char *Storage::FindSpaceForBlock() {
     // firstly consider following the latest block allocated

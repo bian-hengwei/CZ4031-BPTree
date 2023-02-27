@@ -23,10 +23,16 @@ public:
 
     void initializeBPT(vector<int> keylist, vector<char *> addresslist);
 
+    int getNoofNodes();
+
+    int getNoofLevels();
+
 private:
     char *root_;
     bool intialized_;
     Storage storage_;
+    int noofnodes;
+    int nooflevels;
 };
 
 #endif //BPT_H

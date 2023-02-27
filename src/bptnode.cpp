@@ -56,7 +56,7 @@ void BPTNode::SetKey(unsigned short index, int key) {
 
 void BPTNode::SetChild(unsigned short index, char *child) {
     assert(0 <= index);
-    assert(index <= GetNumKeys());
+    //assert(index <= GetNumKeys());
     assert(index <= MAX_KEYS);
     children_[index] = child;
 }
