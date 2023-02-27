@@ -22,6 +22,24 @@ Storage::~Storage() {
     operator delete(pStorage_);
 }
 
+char *Storage::FindSpaceForBlock() {
+    // firstly consider following the latest block allocated
+    char *latestBlock = GetLatestBlock();
+    if (latestBlock - pStorage_ < disk_size_) {
+        return latestBlock + BLOCK_SIZE;
+    }
+    // if no more space, come back to search for an available slot;
+    char *pBlock = pStorage_;
+    while (pBlock < pStorage_ + disk_size_) {
+        if (!block::IsUsed(pBlock)) {
+            return pBlock;
+        }
+        pBlock += BLOCK_SIZE;
+    }
+    // all block slots are used
+    return nullptr;
+}
+
 char *Storage::AllocateBlock() {
     try {
         int num_of_blocks = GetNumOfBlocks();
@@ -29,7 +47,17 @@ char *Storage::AllocateBlock() {
         if (disk_size_ < num_of_blocks * BLOCK_SIZE + BLOCK_SIZE) {
             throw;
         }
-        char *pBlock = pStorage_ + num_of_blocks * BLOCK_SIZE;
+        char *pBlock;
+        // if no blocks, start from the storage ptr
+        if (GetNumOfBlocks() == 0) {
+            pBlock = pStorage_;
+        } else {
+            pBlock = FindSpaceForBlock();
+        }
+        // ensure that there is an available slot for the block
+        if (!pBlock) {
+            throw;
+        }
         blocks_.emplace_back(pBlock);
         return pBlock;
     } catch (...) {
@@ -66,7 +94,9 @@ void Storage::FreeBlock(char *pBlock) {
 int Storage::GetNumOfRecords() const {
     int count = 0;
     for (const auto &block: blocks_) {
-        count += block::record::GetOccupiedCount(block);
+        if (block::GetBlockType(block) == BlockType::RECORD) {
+            count += block::record::GetOccupiedCount(block);
+        }
     }
     return count;
 }
@@ -85,6 +115,8 @@ char *Storage::GetBlockByIndex(int index) {
     }
     return nullptr;
 }
+
+
 
 
 
