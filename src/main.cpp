@@ -111,11 +111,11 @@ int main() {
     BPT bpttree = BPT(pRootMem, storage);
     assert(bpttree.getInitialized() == false);
 
-    vector<int> vector1(1,1);
-    vector<char *> vector2(1,record_address);
+    vector<int> vector1(300,1);
+    vector<char *> vector2(300,record_address);
     bpttree.initializeBPT(vector1, vector2);
 
-//    cout << "No of Nodes: " << bpttree.getNoofNodes() << endl;
-//    cout << "No of Levels: "<< bpttree.getNoofLevels() << endl;
+    cout << "No of Nodes: " << bpttree.getNoofNodes() << endl;
+    cout << "No of Levels: "<< bpttree.getNoofLevels() << endl;
     return 0;
 }
