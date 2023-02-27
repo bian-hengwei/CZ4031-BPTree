@@ -6,6 +6,7 @@
 #include <cstring>
 
 #include "dbtypes.h"
+#include "storage.h"
 
 namespace dbtypes {
 
@@ -36,6 +37,38 @@ void WriteRecordMovie(char *pBlockMem, unsigned short offset, RecordMovie *recor
 RecordBlockHeader *ReadRecordBlockHeader(char *pBlockMem) {
     assert(ReadBlockHeader(pBlockMem)->type == BlockType::RECORD);
     return (RecordBlockHeader *) (pBlockMem + BLOCK_HEADER_SIZE);
+}
+
+BlockHeader *ReadBlockHeader_D(char *pBlock) {
+    char *pBlockMem = static_cast<char *>(operator new(BLOCK_SIZE));
+    Storage::ReadBlock(pBlockMem, pBlock);
+    BlockHeader *block_header = ReadBlockHeader(pBlockMem);
+    operator delete(pBlockMem);
+    return block_header;
+}
+
+RecordMovie *ReadRecordMovie_D(char *pBlock, unsigned short offset) {
+    char *pBlockMem = static_cast<char *>(operator new(BLOCK_SIZE));
+    Storage::ReadBlock(pBlockMem, pBlock);
+    RecordMovie *record_movie = ReadRecordMovie(pBlockMem, offset);
+    operator delete(pBlockMem);
+    return record_movie;
+}
+
+void WriteRecordMovie_D(char *pBlock, unsigned short offset, RecordMovie *record_movie) {
+    char *pBlockMem = static_cast<char *>(operator new(BLOCK_SIZE));
+    Storage::ReadBlock(pBlockMem, pBlock);
+    WriteRecordMovie(pBlockMem, offset, record_movie);
+    Storage::WriteBlock(pBlock, pBlockMem);
+    operator delete(pBlockMem);
+}
+
+RecordBlockHeader *ReadRecordBlockHeader_D(char *pBlock) {
+    char *pBlockMem = static_cast<char *>(operator new(BLOCK_SIZE));
+    Storage::ReadBlock(pBlockMem, pBlock);
+    RecordBlockHeader *record_block_header = ReadRecordBlockHeader(pBlockMem);
+    operator delete(pBlockMem);
+    return record_block_header;
 }
 
 }  // dbtypes

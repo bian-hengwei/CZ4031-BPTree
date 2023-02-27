@@ -51,6 +51,17 @@ void WriteRecordMovie(char *pBlockMem, unsigned short offset, RecordMovie *recor
 // typecasting only
 RecordBlockHeader *ReadRecordBlockHeader(char *pBlockMem);
 
+BlockHeader *ReadBlockHeader_D(char *pBlock);
+
+RecordMovie *ReadRecordMovie_D(char *pBlock, unsigned short offset);
+
+void WriteRecordMovie_D(char *pBlock, unsigned short offset, RecordMovie *record_movie);
+
+RecordBlockHeader *ReadRecordBlockHeader_D(char *pBlock);
+
+// TODO:
+// RecordMovie ReadRecordMovie(char *pRecord);
+
 }
 
 #endif

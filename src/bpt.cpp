@@ -7,10 +7,11 @@
 #include "block.h"
 
 #include <vector>
-#include <math.h>
+#include <cmath>
 #include <cassert>
 
-BPT::BPT(char *pRoot, Storage storage) : root_(pRoot), intialized_(false), storage_(storage), noofnodes(1), nooflevels(1){}
+BPT::BPT(char *pRoot, Storage storage) : root_(pRoot), intialized_(false), storage_(storage), noofnodes(1),
+                                         nooflevels(1) {}
 
 BPT::~BPT() {
 
@@ -32,13 +33,14 @@ bool BPT::getInitialized() {
     return this->intialized_;
 }
 
-int BPT::getNoofNodes(){
+int BPT::getNoofNodes() {
     return noofnodes;
 }
 
-int BPT::getNoofLevels(){
+int BPT::getNoofLevels() {
     return nooflevels;
 }
+
 // Keylist and addresslist are sorted
 void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
     if (getInitialized()) {
@@ -55,8 +57,8 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
     int count = 0;
     BPTNode *leafnode = new BPTNode(getRoot());
     BPTNode *nonleafNode;
-    char* nodeAddress;
-    char* nodeAddressMem;
+    char *nodeAddress;
+    char *nodeAddressMem;
     int curKeyCount = 0;
     bool setmax = false;
     //Initialize leaf nodes
@@ -73,7 +75,7 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
         if (curKeyCount == maxKeyCount) {
             nodeAddress = storage_.AllocateBlock();
             leafnode->SetChild(MAX_KEYS, nodeAddress);
-            
+
             nodeAddressMem = static_cast<char *>(operator new(BLOCK_SIZE));
             Storage::ReadBlock(nodeAddressMem, nodeAddress);
             block::Initialize(nodeAddressMem, BlockType::BPTREE);
@@ -101,8 +103,8 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
         curKeyCount++;
         count++;
     }
-    if (nodes.size()>0){
-        assert(curKeyCount>=floor((maxKeyCount + 1) / 2));
+    if (nodes.size() > 0) {
+        assert(curKeyCount >= floor((maxKeyCount + 1) / 2));
     }
 
     // Recursively create levels. If nodes.size == 0, means that only one node in the level.
@@ -119,18 +121,18 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
         block::bpt::Initialize(nodeAddressMem);
         Storage::WriteBlock(nodeAddress, nodeAddressMem);
         nonleafNode = new BPTNode(nodeAddressMem);
-        
+
         // Here we
         nonleafNode->SetChild(0, addresses[0]);
         tempaddresses.push_back(nodeAddressMem);
         curKeyCount = 0;
-        if (((nodes.size()) <= (2 * (maxKeyCount)+1)) & (nodes.size() > maxKeyCount)) {
-           
+        if (((nodes.size()) <= (2 * (maxKeyCount) + 1)) & (nodes.size() > maxKeyCount)) {
+
             setmax = true;
             if ((nodes.size() - maxKeyCount) < (floor((maxKeyCount) / 2) + 1)) {
                 maxKeyCount = nodes.size() - floor((maxKeyCount) / 2) - 1;
             }
-            
+
         }
         for (int i = 0; i < nodes.size(); i++) {
             if (curKeyCount == maxKeyCount) {
@@ -172,7 +174,7 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
                 curKeyCount++;
             }
         }
-        
+
         nodes = tempnodes;
         addresses = tempaddresses;
         lowerbounds = templowerbounds;
@@ -181,8 +183,8 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
         templowerbounds.clear();
         assert(tempnodes.empty());
 
-        if (nodes.size()>0){
-            assert(curKeyCount>=floor((maxKeyCount) / 2));
+        if (nodes.size() > 0) {
+            assert(curKeyCount >= floor((maxKeyCount) / 2));
         }
     }
     setRoot(addresses[0]);
