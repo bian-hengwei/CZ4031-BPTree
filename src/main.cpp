@@ -18,11 +18,11 @@ int main() {
     Storage storage(DISK_CAPACITY);
 
     // read data
-    cout << "Read data from data/data.tsv..." << endl;
-    ifstream data_tsv("../data/data.tsv");
-    string line;
+//    cout << "Read data from data/data.tsv..." << endl;
+//    ifstream data_tsv("../data/data.tsv");
+//    string line;
 
-    bool isFirstLine = true;
+//    bool isFirstLine = true;
 
 //    while (getline(data_tsv, line)) {
 //        if (isFirstLine) {
@@ -85,13 +85,36 @@ int main() {
 
     cout << "Testing bptinitialization.." << endl;
 
+    char *pRecord = storage.AllocateBlock();
+    char *pRecordMem = static_cast<char *>(operator new(BLOCK_SIZE));
+    Storage::ReadBlock(pRecordMem, pRecord);
+    block::Initialize(pRecordMem, BlockType::RECORD);
+    block::record::Initialize(pRecordMem);
+
+    RecordMovie *record_movie = new RecordMovie();
+    std::strncpy(record_movie->tconst, "tt12345678", TCONST_SIZE);
+    record_movie->avg_rating = 1;
+    record_movie->num_votes = 10000;
+    unsigned short slot = block::record::AllocateSlot(pRecordMem);
+    dbtypes::WriteRecordMovie(pRecordMem, slot, record_movie);
+    char *record_address = pRecord + slot;
+
+    Storage::WriteBlock(pRecord, pRecordMem);
+
     char *pRoot = storage.AllocateBlock();
-    BPT bpttree = BPT(pRoot, storage);
+    char *pRootMem = static_cast<char *>(operator new(BLOCK_SIZE));
+    Storage::ReadBlock(pRootMem, pRoot);
+    block::Initialize(pRootMem, BlockType::BPTREE);
+    block::bpt::Initialize(pRootMem);
+    Storage::WriteBlock(pRoot, pRootMem);
+
+    BPT bpttree = BPT(pRootMem, storage);
     assert(bpttree.getInitialized() == false);
-    char testpointer = 'a';
+
     vector<int> vector1(1,1);
-    vector<char *> vector2(1,&testpointer);
+    vector<char *> vector2(1,record_address);
     bpttree.initializeBPT(vector1, vector2);
+
 //    cout << "No of Nodes: " << bpttree.getNoofNodes() << endl;
 //    cout << "No of Levels: "<< bpttree.getNoofLevels() << endl;
     return 0;

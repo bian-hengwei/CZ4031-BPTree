@@ -11,7 +11,9 @@
 
 BPT::BPT(char *pRoot, Storage storage) : root_(pRoot), intialized_(false), storage_(storage), noofnodes(1), nooflevels(1){}
 
-BPT::~BPT() = default;
+BPT::~BPT() {
+
+}
 
 void BPT::setRoot(char *pRoot) {
     this->root_ = pRoot;
