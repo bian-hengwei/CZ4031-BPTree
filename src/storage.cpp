@@ -29,11 +29,12 @@ char *Storage::FindSpaceForBlock() {
         return latestBlock + BLOCK_SIZE;
     }
     // if no more space, come back to search for an available slot;
-    for (const auto &block: blocks_) {
-        char *nextSlot = block + BLOCK_SIZE;
-        if (!block::IsUsed(nextSlot)) {
-            return nextSlot;
+    char *pBlock = pStorage_;
+    while (pBlock < pStorage_ + disk_size_) {
+        if (!block::IsUsed(pBlock)) {
+            return pBlock;
         }
+        pBlock += BLOCK_SIZE;
     }
     // all block slots are used
     return nullptr;
