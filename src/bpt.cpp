@@ -9,7 +9,7 @@
 #include <math.h>
 #include <cassert>
 
-BPT::BPT(char *pRoot, Storage storage) : root_(pRoot), intialized_(false), storage_(storage) {}
+BPT::BPT(char *pRoot, Storage storage) : root_(pRoot), intialized_(false), storage_(storage), noofnodes(1), nooflevels(1){}
 
 BPT::~BPT() = default;
 
@@ -29,6 +29,13 @@ bool BPT::getInitialized() {
     return this->intialized_;
 }
 
+int BPT::getNoofNodes(){
+    return noofnodes;
+}
+
+int BPT::getNoofLevels(){
+    return nooflevels;
+}
 // Keylist and addresslist are sorted
 void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
     if (getInitialized()) {
@@ -60,6 +67,7 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
             addresses.push_back(nodeAddress);
             lowerbounds.push_back(keylist[count]);
             curKeyCount = 0;
+            noofnodes++;
 
             //ensure minimum no of keys
             if ((keylist.size() - count) <= (2 * maxKeyCount)) {
@@ -82,6 +90,8 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
 
     // Recursively create levels. If nodes.size == 0, means that only one node in the level.
     while (nodes.size() > 0) {
+        nooflevels++;
+        noofnodes++;
         maxKeyCount = MAX_KEYS;
         setmax = false;
         count = 0;
@@ -111,7 +121,7 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
 
                 tempnodes.push_back(nonleafNode);
                 curKeyCount = 0;
-
+                noofnodes++;
                 // this ensures the minimum amount of keys.
                 if ((nodes.size() - i) <= (2 * (maxKeyCount) + 1)) {
                     if (!setmax) {
@@ -140,5 +150,4 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
     }
     setRoot(addresses[0]);
     setInitialized(true);
-
 }
