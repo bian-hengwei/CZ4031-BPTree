@@ -18,9 +18,11 @@ const int MAX_KEYS = (BLOCK_SIZE - BLOCK_HEADER_SIZE - NODE_HEAD_SIZE - sizeof(v
 
 class BPTNode {
 public:
-    explicit BPTNode(char *pBlockMem);
+    explicit BPTNode(char *pBlock);
 
     ~BPTNode();
+
+    void SaveNode() const;
 
     char *GetAddress() const;
 
@@ -53,6 +55,7 @@ public:
     void RemoveChild(unsigned short index);
 
 private:
+    char *pBlock_;
     char *pBlockMem_;
     BPTNodeHead *bpt_node_head_;
     int *keys_;
