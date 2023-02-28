@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cassert>
 #include <vector>
+#include <cstdlib>
 
 #include "block.h"
 #include "bptnode.h"
@@ -112,15 +113,19 @@ int main() {
     assert(bpttree.getInitialized() == false);
 
 
-
-    vector<int> vector1(20, 1);
-    vector<char *> vector2(20, record_address);
+    int n = 500;
+    vector<int> vector1;
+    int cur_num = 0;
+    for (int i = 0; i < n; i++) {
+        cur_num += rand() % 5;
+        vector1.push_back(cur_num);
+    }
+    vector<char *> vector2(n, record_address);
 
     bpttree.initializeBPT(vector1, vector2);
 
     cout << "No of Nodes: " << bpttree.getNoofNodes() << endl;
     cout << "No of Levels: " << bpttree.getNoofLevels() << endl;
-
 
 
     bpttree.PrintTree();

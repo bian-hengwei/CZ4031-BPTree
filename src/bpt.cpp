@@ -78,7 +78,7 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
         if (curKeyCount == maxKeyCount) {
             nodeAddress = storage_.AllocateBlock();
             leafnode->SetChild(MAX_KEYS, nodeAddress);
-            
+
             nodeAddressMem = static_cast<char *>(operator new(BLOCK_SIZE));
             Storage::ReadBlock(nodeAddressMem, nodeAddress);
             block::Initialize(nodeAddressMem, BlockType::BPTREE);
@@ -201,15 +201,11 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
 void BPT::PrintTree() {
     queue<char *> node_q;
     node_q.push(root_);
-    node_q.push(nullptr);
+    unsigned int level_nodes_next = 0;
+    unsigned int level_nodes = 1;  // No. of nodes left in this level
     while (!node_q.empty()) {
         char *pNode = node_q.front();
         node_q.pop();
-        if (pNode == nullptr) {  // end of level is reached
-            node_q.push(nullptr);
-            std::cout << std::endl;
-            continue;
-        }
 
         BPTNode *node = new BPTNode(pNode);
 
@@ -222,7 +218,14 @@ void BPT::PrintTree() {
         if (!node->IsLeaf()) {
             for (int i = 0; i < node->GetNumKeys() + 1; i++) {
                 node_q.push(node->GetChild(i));
+                level_nodes_next++;
             }
+        }
+
+        level_nodes--;
+        if (level_nodes == 0) {  // end of level is reached
+            level_nodes = level_nodes_next;
+            std::cout << std::endl;
         }
     }
 }
