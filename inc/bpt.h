@@ -27,6 +27,8 @@ public:
 
     int getNoofLevels();
 
+    void insertBPT(int key, char *address);
+
 private:
     char *root_;
     bool intialized_;

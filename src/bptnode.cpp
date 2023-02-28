@@ -60,6 +60,14 @@ int BPTNode::GetMaxKey() const {
     return keys_[bpt_node_head_->num_keys_ - 1];
 }
 
+int BPTNode::GetKey(unsigned short index){
+    return keys_[index];
+}
+
+char *BPTNode::GetChild(unsigned short index){
+    return children_[index];
+}
+
 void BPTNode::SetKey(unsigned short index, int key) {
     assert(0 <= index);
     assert(index < GetNumKeys());
