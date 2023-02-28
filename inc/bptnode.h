@@ -42,9 +42,9 @@ public:
 
     int GetMaxKey() const;
 
-    int GetKey(unsigned short index);
+    int GetKey(unsigned short index) const;
 
-    char *GetChild(unsigned short index);
+    char *GetChild(unsigned short index) const;
 
     void SetKey(unsigned short index, int key);
 

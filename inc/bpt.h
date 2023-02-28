@@ -27,7 +27,7 @@ public:
 
     int getNoofLevels();
 
-    void insertBPT(int key, char *address);
+    void PrintTree();
 
 private:
     char *root_;

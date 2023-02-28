@@ -6,9 +6,11 @@
 #include "bptnode.h"
 #include "block.h"
 
-#include <vector>
 #include <cmath>
 #include <cassert>
+#include <iostream>
+#include <queue>
+#include <vector>
 
 BPT::BPT(char *pRoot, Storage storage) : root_(pRoot), intialized_(false), storage_(storage), noofnodes(1),
                                          nooflevels(1) {}
@@ -195,27 +197,33 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
     setInitialized(true);
 }
 
-void BPT::insertBPT(int key, char *address){
-    if (getInitialized() == false) {
-        return;
-    }
-    BPTNode cursor = BPTNode(getRoot());
-    //Iterate to find leaf node to insert to
-    while (cursor.IsLeaf() == false) {
-        //Check keys in cursor
-        for (int i = 0; i < cursor.GetNumKeys();i++) {
-            if (key < cursor.GetKey(i)){
-                cursor = BPTNode(cursor.GetChild(i));
-                break;
-            }
-            // if key is greater than all key values, take the rightmost child
-            if (i >= cursor.GetNumKeys() - 1){
-                cursor = BPTNode(cursor.GetChild(i+1));
-                break;
+
+void BPT::PrintTree() {
+    queue<char *> node_q;
+    node_q.push(root_);
+    node_q.push(nullptr);
+    while (!node_q.empty()) {
+        char *pNode = node_q.front();
+        node_q.pop();
+        if (pNode == nullptr) {  // end of level is reached
+            node_q.push(nullptr);
+            std::cout << std::endl;
+            continue;
+        }
+
+        BPTNode *node = new BPTNode(pNode);
+
+        for (int i = 0; i < node->GetNumKeys(); i++) {
+            std::cout << node->GetKey(i) << " ";
+        }
+
+        std::cout << " | ";
+
+        if (!node->IsLeaf()) {
+            for (int i = 0; i < node->GetNumKeys() + 1; i++) {
+                node_q.push(node->GetChild(i));
             }
         }
     }
-
-    
-    
 }
+

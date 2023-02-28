@@ -60,11 +60,12 @@ int BPTNode::GetMaxKey() const {
     return keys_[bpt_node_head_->num_keys_ - 1];
 }
 
-int BPTNode::GetKey(unsigned short index){
+
+int BPTNode::GetKey(unsigned short index) const {
     return keys_[index];
 }
 
-char *BPTNode::GetChild(unsigned short index){
+char *BPTNode::GetChild(unsigned short index) const {
     return children_[index];
 }
 
