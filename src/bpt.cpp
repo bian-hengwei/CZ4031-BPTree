@@ -65,6 +65,7 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
     bool setmax = false;
     //Initialize leaf nodes
     addresses.push_back(getRoot());
+    leafnode->SetLeaf(true);
     // note that we do not push the first node of each level into the nodes vector.
     // This is because while we need the first node address, we do not need the actual node
     if ((keylist.size() <= (2 * maxKeyCount)) & (keylist.size() > maxKeyCount)) {
@@ -77,13 +78,14 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
         if (curKeyCount == maxKeyCount) {
             nodeAddress = storage_.AllocateBlock();
             leafnode->SetChild(MAX_KEYS, nodeAddress);
-
+            
             nodeAddressMem = static_cast<char *>(operator new(BLOCK_SIZE));
             Storage::ReadBlock(nodeAddressMem, nodeAddress);
             block::Initialize(nodeAddressMem, BlockType::BPTREE);
             block::bpt::Initialize(nodeAddressMem);
             Storage::WriteBlock(nodeAddress, nodeAddressMem);
             leafnode = new BPTNode(nodeAddressMem);
+            leafnode->SetLeaf(true);
             nodes.push_back(leafnode);
             addresses.push_back(nodeAddressMem);
             lowerbounds.push_back(keylist[count]);
@@ -126,6 +128,7 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
 
         // Here we
         nonleafNode->SetChild(0, addresses[0]);
+        nonleafNode->SetLeaf(false);
         tempaddresses.push_back(nodeAddressMem);
         curKeyCount = 0;
         if (((nodes.size()) <= (2 * (maxKeyCount) + 1)) & (nodes.size() > maxKeyCount)) {
@@ -146,6 +149,7 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
                 block::bpt::Initialize(nodeAddressMem);
                 Storage::WriteBlock(nodeAddress, nodeAddressMem);
                 nonleafNode = new BPTNode(nodeAddressMem);
+                nonleafNode->SetLeaf(false);
                 tempaddresses.push_back(nodeAddressMem);
 
 
@@ -193,6 +197,7 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
     setInitialized(true);
 }
 
+
 void BPT::PrintTree() {
     queue<char *> node_q;
     node_q.push(root_);
@@ -221,3 +226,4 @@ void BPT::PrintTree() {
         }
     }
 }
+
