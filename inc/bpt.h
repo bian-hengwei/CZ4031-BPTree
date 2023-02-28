@@ -27,6 +27,8 @@ public:
 
     int getNoofLevels();
 
+    void PrintTree();
+
 private:
     char *root_;
     bool intialized_;
