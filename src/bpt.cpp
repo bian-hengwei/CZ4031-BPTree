@@ -303,6 +303,11 @@ void BPT::search(int lowerBoundKey, int upperBoundKey) //take in lower and upper
       }
     }
   }
-  avgavgrating=totalavgrating/numavgrating;
+  if (numavgrating == 0){
+      avgavgrating = 0;
+  }
+  else {
+      avgavgrating = totalavgrating / numavgrating;
+  }
   return;
 }
