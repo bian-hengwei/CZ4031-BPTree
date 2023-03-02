@@ -14,7 +14,7 @@
 #include <vector>
 
 BPT::BPT(char *pRoot, Storage storage) : root_(pRoot), intialized_(false), storage_(storage), noofnodes(1),
-                                         nooflevels(1) {}
+                                         nooflevels(1), noofindexnodes(1), noofdatablocks(0),avgavgrating(0) {}
 
 BPT::~BPT() {
 
@@ -42,6 +42,18 @@ int BPT::getNoofNodes() {
 
 int BPT::getNoofLevels() {
     return nooflevels;
+}
+
+int BPT::getIndexNodes(){
+    return noofindexnodes;
+}
+
+int BPT::getDataBlocks(){
+    return noofdatablocks;
+}
+
+int BPT::getAvgAvgRating(){
+    return avgavgrating;
 }
 
 // Keylist and addresslist are sorted
