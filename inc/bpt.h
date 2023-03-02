@@ -30,6 +30,12 @@ public:
     void PrintTree();
 
     void search(int lowerBoundKey, int upperBoundKey);
+    
+    int getIndexNodes();
+
+    int getDataBlocks();
+
+    int getAvgAvgRating();
 
 
 private:
@@ -38,6 +44,9 @@ private:
     Storage storage_;
     int noofnodes;
     int nooflevels;
+    int noofindexnodes;
+    int noofdatablocks;
+    int avgavgrating;
 };
 
 #endif //BPT_H
