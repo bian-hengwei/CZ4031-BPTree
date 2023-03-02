@@ -29,12 +29,24 @@ public:
 
     void PrintTree();
 
+    void search(int lowerBoundKey, int upperBoundKey);
+    
+    int getIndexNodes();
+
+    int getDataBlocks();
+
+    int getAvgAvgRating();
+
+
 private:
     char *root_;
     bool intialized_;
     Storage storage_;
     int noofnodes;
     int nooflevels;
+    int noofindexnodes;
+    int noofdatablocks;
+    int avgavgrating;
 };
 
 #endif //BPT_H
