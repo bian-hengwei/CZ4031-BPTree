@@ -29,6 +29,9 @@ public:
 
     void PrintTree();
 
+    void search(int lowerBoundKey, int upperBoundKey);
+
+
 private:
     char *root_;
     bool intialized_;
