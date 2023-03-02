@@ -129,6 +129,25 @@ int main() {
 
 
     bpttree.PrintTree();
+    
+    cout << "--- EXPERIMENT 3 ---" << endl;
+    cout << "--- Retrieving movies with the “numVotes” equal to 500  ---" << endl;
+    bpttree.search(500, 500);
+    cout << "number of index nodes the process accesses: " << bpttree.getIndexNodes() << endl;
+    cout << "number of data blocks the process accesses: " << bpttree.getDataBlocks() << endl;
+    cout << "average of “averageRating’s” of the records that are returned: " << bpttree.getAvgAvgRating() << endl;
+    cout << "the running time of the retrieval process: " << "" << endl;
+    cout << "the number of data blocks that would be accessed by a brute-force linear scan method and its running time : " << "" << endl;
+
+
+    cout << "--- EXPERIMENT 4 ---" << endl;
+    cout << "--- Retrieving movies with the “numVotes” equal to 500  ---" << endl;
+    bpttree.search(30000, 40000);
+    cout << "number of index nodes the process accesses: " << bpttree.getIndexNodes() << endl;
+    cout << "number of data blocks the process accesses: " << bpttree.getDataBlocks() << endl;
+    cout << "average of “averageRating’s” of the records that are returned: " << bpttree.getAvgAvgRating() << endl;
+    cout << "the running time of the retrieval process: " << "" << endl;
+    cout << "the number of data blocks that would be accessed by a brute-force linear scan method and its running time : " << "" << endl;
 
     return 0;
 }
