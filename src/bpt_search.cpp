@@ -59,13 +59,13 @@ void BPT::search(int lowerBoundKey, int upperBoundKey) //take in lower and upper
           char *pBlockMem = pRecord - offset;
           RecordMovie *recordMovie = dbtypes::ReadRecordMovie(pBlockMem, offset);
           totalavgrating = recordMovie->avg_rating + totalavgrating;
-          numofavgrating++;
+          numavgrating++;
           cout << "Movie Record -- tconst: " << recordMovie->tconst << " avgRating: " << recordMovie->avg_rating 
           << " numVotes: " << recordMovie->num_votes << endl;
         }
       }
     }
   }
-  avgavgrating=totalavgrating/numofavgrating;
+  avgavgrating=totalavgrating/numavgrating;
   return;
 }
