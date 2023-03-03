@@ -238,7 +238,8 @@ void BPT::PrintTree() {
         level_nodes--;
         if (level_nodes == 0) {  // end of level is reached
             level_nodes = level_nodes_next;
-            std::cout << std::endl;
+            std::cout << std::endl << std::endl;
+            level_nodes_next = 0;
         }
     }
     
@@ -310,4 +311,186 @@ void BPT::search(int lowerBoundKey, int upperBoundKey) //take in lower and upper
       avgavgrating = totalavgrating / numavgrating;
   }
   return;
+}
+
+char *BPT::SearchLeafNode(int key) {
+    BPTNode *node = new BPTNode(root_);
+    while (!node->IsLeaf()) {
+        node = new BPTNode(node->GetChild(SearchKeyIndex(node, key)));
+    }
+    return node->GetAddress();
+}
+
+int BPT::SearchKeyIndex(BPTNode *node, int key) {
+    int i = 0;
+    while (i < node->GetNumKeys() && key > node->GetKey(i)) {
+        i += 1;
+    }
+    return i;
+}
+
+void BPT::InsertToArray(BPTNode *node, int index, int key, char *address, int *keys, char **children) {
+    for (int j = 0; j < node->GetNumKeys() + 1; j++) {
+        if (j < index) {
+            keys[j] = node->GetKey(j);
+            children[j] = node->GetChild(j);
+        }
+        else if (index == j) {
+            keys[j] = key;
+            children[j] = address;
+        }
+        else {
+            keys[j] = node->GetKey(j - 1);
+            children[j] = node->GetChild(j - 1);
+        }
+    }
+    children[MAX_KEYS + 1] = node->GetChild(MAX_KEYS);
+}
+
+/**
+ * Assume node_l and node_r already correctly constructed,
+ * this function tries to either insert them into their parents.
+ */
+void BPT::InsertToParent(char *node, int middle_key, char *node_l_block, char *node_r_block) {
+    BPTNode *current_node = new BPTNode(node);
+    BPTNode *node_l = new BPTNode(node_l_block);
+    BPTNode *node_r = new BPTNode(node_r_block);
+    if (node == root_) {
+        // allocate a new block for root
+        char *new_root_block = storage_.AllocateBlock();
+        BPTNode *new_root = new BPTNode(new_root_block);
+        node_l->SetParent(new_root_block);
+        node_r->SetParent(new_root_block);
+        // initialize root and insert values
+        new_root->SetLeaf(false);
+        new_root->InsertKey(0, middle_key);
+        new_root->InsertChild(0, node_l_block);
+        new_root->InsertChild(1, node_r_block);
+        // update root address
+        root_ = new_root_block;
+    }
+    else {
+        // if node is not root, we find its parent
+        char *parent = current_node->GetParent();
+        BPTNode *parent_node = new BPTNode(parent);
+        node_l->SetParent(parent);
+        node_r->SetParent(parent);
+        int i = 0;  // address of node
+        while (parent_node->GetChild(i) != node) {
+            i++;
+        }
+        // modify node value
+        parent_node->SetChild(i, node_r_block);
+        if (parent_node->GetNumKeys() < MAX_KEYS) {
+            parent_node->InsertKey(i, middle_key);
+            parent_node->InsertChild(i, node_l_block);
+            return;
+        }
+        int parent_keys[MAX_KEYS + 1];
+        char *parent_children[MAX_KEYS + 2];
+        InsertToArray(parent_node, i, middle_key,
+                      node_l_block, parent_keys, parent_children);
+        SplitNonLeaf(parent_node->GetAddress(), parent_keys, parent_children);
+    }
+}
+
+/**
+ * Splits a non-leaf node
+ */
+void BPT::SplitNonLeaf(char *node, int keys[], char *children[]) {
+    int middle_key;
+    int size_l = (MAX_KEYS + 1) / 2;  // 7 keys & 8 children
+    int size_r = MAX_KEYS - size_l;  // 7 keys & 8 children
+
+    // initialize new blocks
+    char *node_l_block = storage_.AllocateBlock();
+    char *node_r_block = storage_.AllocateBlock();
+    BPTNode *node_l = new BPTNode(node_l_block);
+    BPTNode *node_r = new BPTNode(node_r_block);
+    node_l->SetLeaf(false);
+    node_r->SetLeaf(false);
+
+    // copy keys
+    for (int i = 0; i < MAX_KEYS + 1; i++) {
+        if (i < size_l) {
+            node_l->InsertKey(i, keys[i]);
+        }
+        else if (i == size_l) {
+            middle_key = keys[i];
+        }
+        else {
+            node_r->InsertKey(i - size_l - 1, keys[i]);
+        }
+    }
+
+    // copy children
+    for (int i = 0; i < MAX_KEYS + 2; i++) {
+        BPTNode *temp = new BPTNode(children[i]);
+        cout << temp->GetNumKeys();
+        if (i <= size_l) {
+            node_l->InsertChild(i, children[i]);
+            temp->SetParent(node_l->GetAddress());
+        }
+        else {
+            node_r->InsertChild(i - size_l - 1, children[i]);
+            temp->SetParent(node_r->GetAddress());
+        }
+    }
+
+    InsertToParent(node, middle_key, node_l_block, node_r_block);
+
+    storage_.FreeBlock(node);
+}
+
+void BPT::SplitLeaf(char *leaf, int keys[], char *children[]) {
+    int size_l = (MAX_KEYS + 1) / 2;  // 7 keys
+    int size_r = MAX_KEYS + 1 - size_l;  // 8 keys
+    int middle_key = keys[size_l];
+
+    char *node_l_block = storage_.AllocateBlock();
+    char *node_r_block = storage_.AllocateBlock();
+    BPTNode *node_l = new BPTNode(node_l_block);
+    BPTNode *node_r = new BPTNode(node_r_block);
+    node_l->SetLeaf(true);
+    node_r->SetLeaf(true);
+
+    // copy keys
+    for (int i = 0; i < MAX_KEYS + 1; i++) {
+        if (i < size_l) {
+            node_l->InsertKey(i, keys[i]);
+        }
+        else {
+            node_r->InsertKey(i - size_l, keys[i]);
+        }
+    }
+
+    // copy children
+    for (int i = 0; i < MAX_KEYS + 2; i++) {
+        if (i < size_l) {
+            node_l->InsertChild(i, children[i]);
+        }
+        else {
+            node_r->InsertChild(i - size_l, children[i]);
+        }
+    }
+    node_l->SetChild(size_l, node_r->GetAddress());
+
+    InsertToParent(leaf, middle_key, node_l_block, node_r_block);
+
+    storage_.FreeBlock(leaf);
+}
+
+void BPT::Insert(int key, char *address) {
+    BPTNode *leaf_node = new BPTNode(SearchLeafNode(key));
+    int i = SearchKeyIndex(leaf_node, key);
+
+    if (leaf_node->GetNumKeys() < MAX_KEYS) {
+        leaf_node->InsertKey(i, key);
+        leaf_node->InsertChild(i, address);
+        return;
+    }
+    int keys[MAX_KEYS + 1];
+    char *children[MAX_KEYS + 2];
+    InsertToArray(leaf_node, i, key, address, keys, children);
+    SplitLeaf(leaf_node->GetAddress(), keys, children);
 }
