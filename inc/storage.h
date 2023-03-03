@@ -35,6 +35,8 @@ public:
 
     char *FindSpaceForBlock();
 
+    char *GetAddress() const;
+
 private:
     size_t disk_size_;
     vector<char *> blocks_;

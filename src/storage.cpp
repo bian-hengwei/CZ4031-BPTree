@@ -119,9 +119,6 @@ char *Storage::GetBlockByIndex(int index) {
     return nullptr;
 }
 
-
-
-
-
-
-
+char *Storage::GetAddress() const {
+    return pStorage_;
+}
