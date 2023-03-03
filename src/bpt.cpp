@@ -370,8 +370,8 @@ void BPT::search(int lowerBoundKey, int upperBoundKey) //take in lower and upper
             }
 
             // Follow the right sibling pointer to the next leaf node
-            if (!stop && node->GetChild(MAX_KEYS) != nullptr) {
-                node = new BPTNode(node->GetChild(MAX_KEYS));
+            if (!stop && node->GetChild(node->GetNumKeys()) != nullptr) {
+                node = new BPTNode(node->GetChild(node->GetNumKeys()));
             }
             else {
                 stop = true; // no right sibling or end of search range
