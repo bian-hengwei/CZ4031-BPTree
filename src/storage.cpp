@@ -52,7 +52,8 @@ char *Storage::AllocateBlock() {
         // if no blocks, start from the storage ptr
         if (GetNumOfBlocks() == 0) {
             pBlock = pStorage_;
-        } else {
+        }
+        else {
             pBlock = FindSpaceForBlock();
         }
         // ensure that there is an available slot for the block
@@ -61,7 +62,8 @@ char *Storage::AllocateBlock() {
         }
         blocks_.emplace_back(pBlock);
         return pBlock;
-    } catch (...) {
+    }
+    catch (...) {
         cout << "Unable to add a new block due to not insufficient storage. A null pointer is returned." << endl;
         return nullptr;
     }

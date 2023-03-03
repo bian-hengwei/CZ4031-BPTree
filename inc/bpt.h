@@ -31,7 +31,7 @@ public:
     void PrintTree();
 
     void search(int lowerBoundKey, int upperBoundKey);
-    
+
     int getIndexNodes();
 
     int getDataBlocks();
