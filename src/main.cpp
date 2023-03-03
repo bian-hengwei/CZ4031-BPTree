@@ -113,7 +113,7 @@ int main() {
     assert(bpttree.getInitialized() == false);
 
 
-    int n = 500;
+    int n = 0;
     vector<int> vector1;
     int cur_num = 0;
     for (int i = 0; i < n; i++) {
@@ -127,8 +127,20 @@ int main() {
     cout << "No of Nodes: " << bpttree.getNoofNodes() << endl;
     cout << "No of Levels: " << bpttree.getNoofLevels() << endl;
 
-
     bpttree.PrintTree();
+
+    n = 20000;
+    int insert_count = 1000;
+    for (int j = 0; j < insert_count; j++) {
+
+        int key = rand() % (2 * n);
+
+        char *leaf_addr = bpttree.SearchLeafNode(key);
+        BPTNode *node = new BPTNode(leaf_addr);
+        cout << endl << "Attempting to insert " << key << " at leaf with min value " << node->GetMinKey() << endl;
+        bpttree.Insert(key, record_address);
+        bpttree.PrintTree();
+    }
     
     // cout << "--- EXPERIMENT 3 ---" << endl;
     // cout << "--- Retrieving movies with the “numVotes” equal to 500  ---" << endl;

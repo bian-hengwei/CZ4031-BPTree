@@ -5,6 +5,7 @@
 #ifndef BPT_H
 #define BPT_H
 
+#include "bptnode.h"
 #include "storage.h"
 
 class BPT {
@@ -37,6 +38,10 @@ public:
 
     int getAvgAvgRating();
 
+    void Insert(int key, char *address);
+
+    char *SearchLeafNode(int key);
+
 
 private:
     char *root_;
@@ -47,6 +52,16 @@ private:
     int noofindexnodes;
     int noofdatablocks;
     int avgavgrating;
+
+    static int SearchKeyIndex(BPTNode *node, int key);
+
+    static void InsertToArray(BPTNode *node, int index, int key, char *address, int *keys, char **children);
+
+    void SplitNonLeaf(char *leaf, int *keys, char **children);
+
+    void SplitLeaf(char *leaf, int *keys, char **children);
+
+    void InsertToParent(char *node, int middle_key, char *node_l_block, char *node_r_block);
 };
 
 #endif //BPT_H
