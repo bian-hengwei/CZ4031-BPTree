@@ -568,3 +568,15 @@ void BPT::Insert(int key, char *address) {
     InsertToArray(leaf_node, i, key, address, keys, children);
     SplitLeaf(leaf_node->GetAddress(), keys, children);
 }
+
+void BPT::DeleteRecord(int key) {
+    // find location of the target
+    // get address of the record
+    // free record
+    // delete key & ptr to the record
+    // fix the remaining B+ tree
+}
+
+void BPT::FixTree() {
+
+}

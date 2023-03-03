@@ -42,6 +42,11 @@ public:
 
     char *SearchLeafNode(int key);
 
+    void DeleteRecord(int key);
+
+    void FixTree();
+
+
 
 private:
     char *root_;
