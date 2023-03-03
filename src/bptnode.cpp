@@ -23,7 +23,7 @@ void BPTNode::SaveNode() const {
 
 char *BPTNode::GetAddress() const {
     return pBlock_;
-};
+}
 
 bool BPTNode::IsLeaf() const {
     return bpt_node_head_->leaf_;

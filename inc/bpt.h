@@ -10,7 +10,7 @@
 
 class BPT {
 public:
-    explicit BPT(char *pRoot, Storage storage);
+    explicit BPT(char *pRoot, const Storage& storage);
 
     ~BPT();
 
@@ -20,23 +20,23 @@ public:
 
     void setInitialized(bool initialvalue);
 
-    bool getInitialized();
+    bool getInitialized() const;
 
     void initializeBPT(vector<int> keylist, vector<char *> addresslist);
 
-    int getNoofNodes();
+    int getNoofNodes() const;
 
-    int getNoofLevels();
+    int getNoofLevels() const;
 
     void PrintTree();
 
     void search(int lowerBoundKey, int upperBoundKey);
 
-    int getIndexNodes();
+    int getIndexNodes() const;
 
-    int getDataBlocks();
+    int getDataBlocks() const;
 
-    int getAvgAvgRating();
+    int getAvgAvgRating() const;
 
     void Insert(int key, char *address);
 

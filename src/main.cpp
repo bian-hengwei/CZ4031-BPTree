@@ -92,7 +92,7 @@ int main() {
     block::Initialize(pRecordMem, BlockType::RECORD);
     block::record::Initialize(pRecordMem);
 
-    RecordMovie *record_movie = new RecordMovie();
+    auto *record_movie = new RecordMovie();
     std::strncpy(record_movie->tconst, "tt12345678", TCONST_SIZE);
     record_movie->avg_rating = 1;
     record_movie->num_votes = 10000;
@@ -136,7 +136,7 @@ int main() {
         int key = rand() % (2 * n);
 
         char *leaf_addr = bpttree.SearchLeafNode(key);
-        BPTNode *node = new BPTNode(leaf_addr);
+        auto *node = new BPTNode(leaf_addr);
         cout << endl << "Attempting to insert " << key << " at leaf with min value " << node->GetMinKey() << endl;
         bpttree.Insert(key, record_address);
         bpttree.PrintTree();
