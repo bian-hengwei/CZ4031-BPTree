@@ -73,12 +73,13 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
     BPTNode *leafnode = new BPTNode(getRoot());
     BPTNode *nonleafNode;
     char *nodeAddress;
-    char *nodeAddressMem;
     int curKeyCount = 0;
     bool setmax = false;
-    //Initialize leaf nodes
+    
+    //Setup first note
     addresses.push_back(getRoot());
     leafnode->SetLeaf(true);
+
     // note that we do not push the first node of each level into the nodes vector.
     // This is because while we need the first node address, we do not need the actual node
     if ((keylist.size() <= (2 * maxKeyCount)) & (keylist.size() > maxKeyCount)) {
@@ -87,29 +88,30 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
             maxKeyCount = keylist.size() - floor((maxKeyCount + 1) / 2);
         }
     }
+
+    // This loop initializes all leaf nodes.
     while (count < keylist.size()) {
         if (curKeyCount == maxKeyCount) {
             nodeAddress = storage_.AllocateBlock();
             leafnode->SetChild(MAX_KEYS, nodeAddress);
 
-            nodeAddressMem = static_cast<char *>(operator new(BLOCK_SIZE));
-            Storage::ReadBlock(nodeAddressMem, nodeAddress);
-            block::Initialize(nodeAddressMem, BlockType::BPTREE);
-            block::bpt::Initialize(nodeAddressMem);
-            Storage::WriteBlock(nodeAddress, nodeAddressMem);
-            leafnode = new BPTNode(nodeAddressMem);
+            block::bpt::Initialize_D(nodeAddress);
+            leafnode = new BPTNode(nodeAddress);
             leafnode->SetLeaf(true);
             nodes.push_back(leafnode);
-            addresses.push_back(nodeAddressMem);
+            addresses.push_back(nodeAddress);
             lowerbounds.push_back(keylist[count]);
             curKeyCount = 0;
             noofnodes++;
 
-            //ensure minimum no of keys
+            //ensure minimum no of keys. This checks that there are an amount of keys
+            // that can fit in at most 2 leaf nodes.  
             if ((keylist.size() - count) <= (2 * maxKeyCount)) {
                 if (!setmax) {
                     setmax = true;
                     if ((keylist.size() - count - maxKeyCount) < floor((maxKeyCount + 1) / 2)) {
+                        // Set maxKeyCount for the next node so that the final node will have the mininum amount of keys.
+                        // reset the maxKeyCount after initialization is finished.
                         maxKeyCount = keylist.size() - count - floor((maxKeyCount + 1) / 2);
                     }
                 }
@@ -121,28 +123,28 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
         count++;
     }
     if (nodes.size() > 0) {
-        assert(curKeyCount >= floor((maxKeyCount + 1) / 2));
+        assert(curKeyCount >= floor((MAX_KEYS + 1) / 2));
     }
 
     // Recursively create levels. If nodes.size == 0, means that only one node in the level.
     while (nodes.size() > 0) {
         nooflevels++;
         noofnodes++;
+
+
         maxKeyCount = MAX_KEYS;
         setmax = false;
         count = 0;
-        nodeAddress = storage_.AllocateBlock();
-        nodeAddressMem = static_cast<char *>(operator new(BLOCK_SIZE));
-        Storage::ReadBlock(nodeAddressMem, nodeAddress);
-        block::Initialize(nodeAddressMem, BlockType::BPTREE);
-        block::bpt::Initialize(nodeAddressMem);
-        Storage::WriteBlock(nodeAddress, nodeAddressMem);
-        nonleafNode = new BPTNode(nodeAddressMem);
 
-        // Here we
+
+        nodeAddress = storage_.AllocateBlock();
+        block::bpt::Initialize_D(nodeAddress);
+        nonleafNode = new BPTNode(nodeAddress);
+
+        // Here we set initial parameters of the first node in the level.
         nonleafNode->SetChild(0, addresses[0]);
         nonleafNode->SetLeaf(false);
-        tempaddresses.push_back(nodeAddressMem);
+        tempaddresses.push_back(nodeAddress);
         curKeyCount = 0;
         if (((nodes.size()) <= (2 * (maxKeyCount) + 1)) & (nodes.size() > maxKeyCount)) {
 
@@ -156,14 +158,10 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
             if (curKeyCount == maxKeyCount) {
 
                 nodeAddress = storage_.AllocateBlock();
-                nodeAddressMem = static_cast<char *>(operator new(BLOCK_SIZE));
-                Storage::ReadBlock(nodeAddressMem, nodeAddress);
-                block::Initialize(nodeAddressMem, BlockType::BPTREE);
-                block::bpt::Initialize(nodeAddressMem);
-                Storage::WriteBlock(nodeAddress, nodeAddressMem);
-                nonleafNode = new BPTNode(nodeAddressMem);
+                block::bpt::Initialize_D(nodeAddress);
+                nonleafNode = new BPTNode(nodeAddress);
                 nonleafNode->SetLeaf(false);
-                tempaddresses.push_back(nodeAddressMem);
+                tempaddresses.push_back(nodeAddress);
 
 
                 // Insert the first pointer everytime we create a node and continue.
@@ -179,11 +177,13 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
                 curKeyCount = 0;
                 noofnodes++;
                 // this ensures the minimum amount of keys.
-                if ((nodes.size() - i) <= (2 * (maxKeyCount) + 1)) {
+                if ((nodes.size() - i) <= (2 * (MAX_KEYS) + 1)) {
                     if (!setmax) {
                         setmax = true;
-                        if ((nodes.size() - i - maxKeyCount) < (floor((maxKeyCount) / 2) + 1)) {
-                            maxKeyCount = nodes.size() - i - floor((maxKeyCount) / 2) - 1;
+                        if ((nodes.size() - i - MAX_KEYS) < (floor((MAX_KEYS) / 2) + 1)) {
+                            // Set maxKeyCount for the next node so that the final node will have the mininum amount of keys.
+                            // reset the maxKeyCount after level initialization is finished.
+                            maxKeyCount = nodes.size() - i - floor((MAX_KEYS) / 2) - 1;
                         }
                     }
                 }
@@ -203,7 +203,7 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
         assert(tempnodes.empty());
 
         if (nodes.size() > 0) {
-            assert(curKeyCount >= floor((maxKeyCount) / 2));
+            assert(curKeyCount >= floor((maxKeyCount / 2)));
         }
     }
     setRoot(addresses[0]);
