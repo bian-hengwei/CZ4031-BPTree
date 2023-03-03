@@ -358,7 +358,7 @@ void BPT::search(int lowerBoundKey, int upperBoundKey) //take in lower and upper
                 if (node->GetKey(i) >= lowerBoundKey && node->GetKey(i) <= upperBoundKey) {
                     // print the movie record, found
                     char *pRecord = node->GetChild(i);
-                    int offset = (pRecord - storage_.GetLatestBlock()) % BLOCK_SIZE;
+                    int offset = (pRecord - storage_.GetAddress()) % BLOCK_SIZE;
                     char *pBlockMem = pRecord - offset;
                     RecordMovie *recordMovie = dbtypes::ReadRecordMovie(pBlockMem, offset);
                     totalavgrating = recordMovie->avg_rating + totalavgrating;
