@@ -319,7 +319,7 @@ void BPT::search(int lowerBoundKey, int upperBoundKey) //take in lower and upper
         for (int i = 0; i < node->GetNumKeys(); i++) // visit every key in the current node
         {
 
-            if (lowerBoundKey < node->GetKey(i)) // if lowerBoundKey is less than current key (greater), go left.
+            if (lowerBoundKey <= node->GetKey(i)) // if lowerBoundKey is less than current key (greater), go left.
             {
                 node = new BPTNode(node->GetChild(i));
                 break;
