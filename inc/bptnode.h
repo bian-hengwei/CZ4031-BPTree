@@ -46,6 +46,8 @@ public:
 
     char *GetChild(unsigned short index) const;
 
+    int GetChildIndex(const char *childNodeAddress) const;
+
     void SetKey(unsigned short index, int key);
 
     void SetChild(unsigned short index, char *child);

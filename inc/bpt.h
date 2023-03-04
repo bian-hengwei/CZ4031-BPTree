@@ -10,7 +10,7 @@
 
 class BPT {
 public:
-    explicit BPT(char *pRoot, const Storage& storage);
+    explicit BPT(char *pRoot, const Storage &storage);
 
     ~BPT();
 
@@ -42,10 +42,9 @@ public:
 
     char *SearchLeafNode(int key);
 
-    void DeleteRecord(int key);
+    bool DeleteRecord(int keyToDelete);
 
-    void FixTree();
-
+    void FixTree(char *leafNodeAddr);
 
 
 private:
