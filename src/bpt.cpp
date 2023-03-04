@@ -244,19 +244,34 @@ void BPT::search(int lowerBoundKey, int upperBoundKey) //take in lower and upper
     bool stop = false; // default is false because not found any keys
     int totalavgrating = 0;
     int numavgrating = 0;
-
+    bool newblock = false;
+    vector<char *> blockaddresses;
+    noofindexnodes = 0;
+    noofdatablocks = 0;
     while (!node->IsLeaf()) {
         noofindexnodes++;
         node = new BPTNode(node->GetChild(SearchKeyIndex(node, lowerBoundKey)));
     }
     while (!stop) // continue search over the entire range (reach leaf node)
     {
+        newblock = true;
+        noofindexnodes++;
         int i;
         for (i = 0; i < node->GetNumKeys(); i++) {
             // print the movie record, found
             char *pRecord = node->GetChild(i);
             int offset = (pRecord - storage_->GetAddress()) % BLOCK_SIZE;
             char *pBlockMem = pRecord - offset;
+            for (char * x : blockaddresses) {
+                if (x == pBlockMem) {
+                    newblock = false;
+                    break;
+                }
+            }
+            if(newblock){
+                noofdatablocks++;
+                blockaddresses.push_back(pBlockMem);
+            }
             RecordMovie *recordMovie = dbtypes::ReadRecordMovie(pBlockMem, offset);
             if (recordMovie->num_votes > upperBoundKey) // continue till you reach upperBoundKey
             {
