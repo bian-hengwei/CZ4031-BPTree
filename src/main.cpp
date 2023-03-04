@@ -12,7 +12,6 @@
 #include "dbtypes.h"
 #include "storage.h"
 
-
 using namespace std::chrono;
 
 vector<char *> ScanRecords(char *storage, int lo, int hi) {
@@ -43,88 +42,46 @@ vector<char *> ScanRecords(char *storage, int lo, int hi) {
 int main() {
     Storage *storage = new Storage(DISK_CAPACITY);
 
-    // read data
-//    cout << "Read data from data/data.tsv..." << endl;
-//    ifstream data_tsv("../data/data.tsv");
-//    string line;
-
-//    bool isFirstLine = true;
-
-//    while (getline(data_tsv, line)) {
-//        if (isFirstLine) {
-//            isFirstLine = false;
-//            continue;
-//        }
-//        auto *record_movie = new RecordMovie();
-//        stringstream ss(line);
-//        string dataItem;
-//        vector<string> result;
-//        while (getline(ss, dataItem, '\t')) {
-//            result.push_back(dataItem);
-//        }
-//        std::strncpy(record_movie->tconst, result[0].c_str(), TCONST_SIZE);
-//        record_movie->avg_rating = stof(result[1]);
-//        record_movie->num_votes = stoi(result[2]);
-//
-//        cout << "current record read -- tconst: " << record_movie->tconst << " avgRating: " << record_movie->avg_rating
-//             << " numVotes: " << record_movie->num_votes
-//             << endl;
-//
-//        char pBuffer[BLOCK_SIZE];
-//        if (storage.GetNumOfBlocks() == 0 || storage.IsLatestBlockFull()) {
-//            char *pBlock = storage.AllocateBlock();
-//            Storage::ReadBlock(pBuffer, pBlock);
-//
-//            block::Initialize(pBuffer, BlockType::RECORD);
-//            block::record::Initialize(pBuffer);
-//
-//            unsigned short slot = block::record::AllocateSlot(pBuffer);
-//            dbtypes::WriteRecordMovie(pBuffer, slot, record_movie);
-//
-//            Storage::WriteBlock(pBlock, pBuffer);
-//        } else {
-//            char *pBlock = storage.GetLatestBlock();
-//            Storage::ReadBlock(pBuffer, pBlock);
-//
-//            unsigned short slot = block::record::AllocateSlot(pBuffer);
-//            dbtypes::WriteRecordMovie(pBuffer, slot, record_movie);
-//
-//            Storage::WriteBlock(pBlock, pBuffer);
-//        }
-//    }
-//
-//    data_tsv.close();
-//
-//    cout << "--- EXPERIMENT 1 ---" << endl;
-//    cout << "--- after storage statistics ---" << endl;
-//
-//    // get statistics
-//    cout << "number of records: " << storage.GetNumOfRecords() << endl;
-//    cout << "number of blocks: " << storage.GetNumOfBlocks() << endl;
-//    cout << "number of records in the first block: " << block::record::GetOccupiedCount(storage.GetBlockByIndex(0))
-//         << endl;
-//    cout << "number of records in the second block: " << block::record::GetOccupiedCount(storage.GetBlockByIndex(1))
-//         << endl;
-//    cout << "number of records in the last block: " << block::record::GetOccupiedCount(storage.GetLatestBlock())
-//         << endl;
-//    cout << "Record size is: " << RECORD_SIZE << endl;
-
-    cout << "Testing bptinitialization.." << endl;
-
-    char *pRecord = storage->AllocateBlock();
-    block::record::Initialize_D(pRecord);
-
-    auto *record_movie = new RecordMovie();
-    std::strncpy(record_movie->tconst, "tt12345678", TCONST_SIZE);
-    record_movie->avg_rating = 1;
-    record_movie->num_votes = 10000;
-
     char *pRoot = storage->AllocateBlock();
     block::bpt::Initialize_D(pRoot);
+    BPT *bpt = new BPT(pRoot, storage);
     BPTNode *root = new BPTNode(pRoot);
     root->SetLeaf(true);
 
-    BPT *bpttree = new BPT(pRoot, storage);
+    // read data
+    cout << "Read data from data/data.tsv..." << endl;
+    ifstream data_tsv("../data/data.tsv");
+    string line;
+    getline(data_tsv, line);
+
+    int cnt = 0;
+
+    // experiment variables
+    // 1
+    int num_of_records = 0;
+    int size_of_record = PACKED_RECORD_SIZE;
+    int num_of_records_in_block = RECORD_PER_BLOCK;
+    int num_of_blocks_storing_data = 0;
+    // 2
+    int parameter_n = MAX_KEYS;
+    int num_of_nodes_in_bpt = 0;
+    int num_of_levels_in_bpt = 0;
+
+    char *pBlock = nullptr;
+
+    while (getline(data_tsv, line)) {
+        num_of_records++;
+
+        auto *record_movie = new RecordMovie();
+        stringstream ss(line);
+        string dataItem;
+        vector<string> result;
+        while (getline(ss, dataItem, '\t')) {
+            result.push_back(dataItem);
+        }
+        std::strncpy(record_movie->tconst, result[0].c_str(), TCONST_SIZE);
+        record_movie->avg_rating = stof(result[1]);
+        record_movie->num_votes = stoi(result[2]);
 
         if (pBlock == nullptr || block::record::IsFull_D(pBlock)) {
             pBlock = storage->AllocateBlock();
@@ -134,17 +91,11 @@ int main() {
         unsigned short slot = block::record::AllocateSlot_D(pBlock);
         dbtypes::WriteRecordMovie_D(pBlock, slot, record_movie);
 
+        bpt->Insert(record_movie->num_votes, pBlock + slot);
 
-        int key = rand() % (2 * n);
         if (!(++cnt % 100000)) {
             std::cout << cnt << endl;
         }
-        unsigned short slot = block::record::AllocateSlot_D(pRecord);
-        dbtypes::WriteRecordMovie_D(pRecord, slot, record_movie);
-        char *record_address = pRecord + slot;
-
-        bpttree->Insert(key, record_address);
-        bpttree->PrintTree();
     }
     data_tsv.close();
 
@@ -217,4 +168,25 @@ int main() {
     cout
             << "the number of data blocks that would be accessed by a brute-force linear scan method and its running time : "
             << num_of_blocks_storing_data << ", " << duration.count() << endl;
+    cout << "--- EXPERIMENT 5 ---" << endl;
+    cout << "--- Delete those movies with the attribute “numVotes” equal to 1,000  ---" << endl;
+    int keyToDelete = 1000;
+    // start timer
+    auto start = std::chrono::high_resolution_clock::now();
+    while (bpt->DeleteRecord(keyToDelete)) {
+    }
+    // end timer
+    auto finish = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = finish - start;
+
+    std::cout << "the number of nodes of the updated B+ tree: " << bpt->getNumOfNodes() << std::endl;
+    std::cout << "the number of levels of the updated B+ tree: " << bpt->getNumOfLevels() << std::endl;
+    std::cout << "the content of the root node of the updated B+ tree: " << std::endl;
+    auto *rootNode = new BPTNode(bpt->getRoot());
+    for (int i = 0; i < rootNode->GetNumKeys(); i++) {
+        std::cout << "key at index " << i << " is " << root->GetKey(i) << std::endl;
+    }
+    std::cout << "Elapsed time for running deletion: " << elapsed.count() << " s\n";
+    std::cout << "the number of blocks that would be accessed by a brute-force linear scan method: " << "" << std::endl;
+    std::cout << std::endl;
 }
