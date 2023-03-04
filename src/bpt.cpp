@@ -514,13 +514,11 @@ bool BPT::DeleteRecord(int keyToDelete) {
                 recordAddr = leafNode->GetChild(0);
                 targetIndex = 0;
             } else {
-                cout << "The key " << keyToDelete
-                     << " is not in tree. All records containing the key have been deleted already:)" << endl;
+                cout << "All records containing the key " << keyToDelete << " have been deleted already:)" << endl;
                 return false;
             }
         } else {
-            cout << "The key " << keyToDelete
-                 << " is not in tree. All records containing the key have been deleted already:)" << endl;
+            cout << "All records containing the key " << keyToDelete << " have been deleted already:)" << endl;
             return false;
         }
     }
@@ -614,6 +612,7 @@ void BPT::FixTree(char *leafNodeAddr) {
 
                 // update curNode to left sibling
                 curNode = leftSibling;
+                num_of_nodes_--;
             } else {
                 // Merge with the right sibling
                 int rightSiblingIndex = curIndex + 1;
@@ -631,11 +630,11 @@ void BPT::FixTree(char *leafNodeAddr) {
                 // remove right sibling
                 parentNode->RemoveChild(rightSiblingIndex);
                 parentNode->RemoveKey(rightSiblingIndex);
+                num_of_nodes_--;
             }
-
         }
 
-        // fixing the number of keys in each node, then we update values for non-leaf nodes at current level
+        // update values for non-leaf nodes at current level
         if (!curNode->IsLeaf()) {
             auto *parentNode = new BPTNode(curNode->GetParent());
             int numOfNodesInCurrentLevel = parentNode->GetNumKeys() + 1;
@@ -660,6 +659,8 @@ void BPT::FixTree(char *leafNodeAddr) {
         auto *newRootNode = new BPTNode(newRootAddr);
         newRootNode->SetParent(nullptr);
         setRoot(newRootAddr);
+        num_of_nodes_--;
+        num_of_levels_--;
     } else {
         // update the keys in root
         UpdateKeysToNextLB(rootNode);
