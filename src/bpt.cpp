@@ -374,7 +374,11 @@ void BPT::search(int lowerBoundKey, int upperBoundKey) //take in lower and upper
 char *BPT::SearchLeafNode(int key) {
     auto *node = new BPTNode(root_);
     while (!node->IsLeaf()) {
-        node = new BPTNode(node->GetChild(SearchKeyIndex(node, key)));
+        int keyIndex = SearchKeyIndex(node, key);
+//        cout << "Key index: " << keyIndex << endl;
+        char *childAddr = node->GetChild(keyIndex);
+//        cout << "Child Addr: " << childAddr << endl;
+        node = new BPTNode(childAddr);
     }
     return node->GetAddress();
 }
@@ -552,6 +556,7 @@ void BPT::Insert(int key, char *address) {
 }
 
 bool BPT::DeleteRecord(int keyToDelete) {
+    cout << "deleting key " << keyToDelete << endl;
     // start timer
     auto start = std::chrono::high_resolution_clock::now();
     // find nodes of the target
@@ -569,12 +574,25 @@ bool BPT::DeleteRecord(int keyToDelete) {
     }
 
     if (!recordAddr || targetIndex == -1) {
+        // TODO: update the way to get the proper next node
         char *nextNodeAddr = leafNode->GetChild(leafNode->GetNumKeys());
-        auto *nextNode = new BPTNode(nextNodeAddr);
-        if (nextNode->GetMinKey() == keyToDelete) {
-            leafNode = nextNode;
-            recordAddr = nextNode->GetChild(0);
-            targetIndex = 0;
+
+        if (nextNodeAddr) {
+            auto *nextNode = new BPTNode(nextNodeAddr);
+
+            if (nextNode->GetMinKey() == keyToDelete) {
+                leafNode = nextNode;
+                cout << "updated leaf node to next node" << endl;
+                recordAddr = leafNode->GetChild(0);
+                targetIndex = 0;
+            } else {
+                cout << "The key " << keyToDelete << " is not in tree. Unable to delete" << endl;
+                // end timer
+                auto finish = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double> elapsed = finish - start;
+                std::cout << "Elapsed time: " << elapsed.count() << " s\n";
+                return false;
+            }
         } else {
             cout << "The key " << keyToDelete << " is not in tree. Unable to delete" << endl;
             // end timer
@@ -589,11 +607,13 @@ bool BPT::DeleteRecord(int keyToDelete) {
     int offset = (recordAddr - storage_->GetAddress()) % BLOCK_SIZE;
     // the block where the record resides
     char *pBlock = recordAddr - offset;
+    cout << "Freeing block " << (void *) pBlock << " with offset " << offset << endl;
     block::record::FreeSlot_D(pBlock, offset);
 
     // delete the corresponding key & child;
-    leafNode->RemoveKey(targetIndex);
+    cout << "removing child & key for target Index " << targetIndex << endl;
     leafNode->RemoveChild(targetIndex);
+    leafNode->RemoveKey(targetIndex);
 
     // fix the remaining B+ tree
     FixTree(leafNode->GetAddress());
@@ -601,7 +621,7 @@ bool BPT::DeleteRecord(int keyToDelete) {
     // end timer
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = finish - start;
-    std::cout << "Elapsed time: " << elapsed.count() << " s\n";
+    std::cout << "Key " << keyToDelete << " deleted! Elapsed time: " << elapsed.count() << " s\n";
     return true;
 }
 
@@ -609,15 +629,16 @@ void BPT::FixTree(char *leafNodeAddr) {
     auto *curNode = new BPTNode(leafNodeAddr);
     while (curNode->GetAddress() != getRoot()) {
         // If the current node has too few keys, borrow or merge with siblings
-        if (curNode->GetNumKeys() < curNode->GetMinKey()) {
+        if (!curNode->IsNumOfKeysEnough()) {
             auto *parentNode = new BPTNode(curNode->GetParent());
+            // TODO: update the way to get the proper left sibling
             int curIndex = parentNode->GetChildIndex(leafNodeAddr);
 
             // Try to borrow a key from the left sibling
             if (curIndex > 0) {
                 int leftSiblingIndex = curIndex - 1;
                 auto *leftSibling = new BPTNode(parentNode->GetChild(leftSiblingIndex));
-                if (leftSibling->GetNumKeys() > leftSibling->GetMinKey()) {
+                if (leftSibling->IsNumOfKeysEnough()) {
                     int indexToBorrow = leftSibling->GetNumKeys() - 1;
                     // get the key to borrow from the left sibling
                     int borrowedKey = leftSibling->GetKey(indexToBorrow);
@@ -627,8 +648,8 @@ void BPT::FixTree(char *leafNodeAddr) {
                     curNode->InsertKey(0, borrowedKey);
                     curNode->InsertChild(0, borrowedChildAddr);
                     // remove the borrowed key and child from the left sibling
-                    leftSibling->RemoveKey(indexToBorrow);
                     leftSibling->RemoveChild(indexToBorrow);
+                    leftSibling->RemoveKey(indexToBorrow);
                     // update the parent's key that separates the current node and the left sibling
                     parentNode->SetKey(leftSiblingIndex, curNode->GetKey(0));
 
@@ -640,7 +661,7 @@ void BPT::FixTree(char *leafNodeAddr) {
             if (curIndex < parentNode->GetNumKeys()) {
                 int rightSiblingIndex = curIndex + 1;
                 auto *rightSibling = new BPTNode(parentNode->GetChild(rightSiblingIndex));
-                if (rightSibling->GetNumKeys() > rightSibling->GetMinKey()) {
+                if (rightSibling->IsNumOfKeysEnough()) {
                     int indexToBorrow = 0;
                     // get the key to borrow from the right sibling
                     int borrowedKey = rightSibling->GetKey(indexToBorrow);
@@ -650,8 +671,8 @@ void BPT::FixTree(char *leafNodeAddr) {
                     curNode->InsertKey(curNode->GetNumKeys(), borrowedKey);
                     curNode->InsertChild(curNode->GetNumKeys(), borrowedChildAddr);
                     // remove the borrowed key and child from the right sibling
-                    rightSibling->RemoveKey(indexToBorrow);
                     rightSibling->RemoveChild(indexToBorrow);
+                    rightSibling->RemoveKey(indexToBorrow);
                     // update the parent's key that separates the current node and the right sibling
                     parentNode->SetKey(curIndex, curNode->GetKey(0));
 
@@ -670,8 +691,9 @@ void BPT::FixTree(char *leafNodeAddr) {
                 }
 
                 // remove curNode
-                parentNode->RemoveKey(curIndex);
                 parentNode->RemoveChild(curIndex);
+                parentNode->RemoveKey(curIndex);
+
 
                 // update curNode to left sibling
                 curNode = leftSibling;
@@ -686,23 +708,50 @@ void BPT::FixTree(char *leafNodeAddr) {
                 }
 
                 // remove right sibling
-                parentNode->RemoveKey(rightSiblingIndex);
                 parentNode->RemoveChild(rightSiblingIndex);
+                parentNode->RemoveKey(rightSiblingIndex);
             }
 
-            // Update the current node and its parent
-            curNode = parentNode;
-        } else {
-            curNode = new BPTNode(curNode->GetParent());
         }
+
+        // fixing the number of keys in each node, then we update values for non-leaf nodes at current level
+        if (!curNode->IsLeaf()) {
+            auto *parentNode = new BPTNode(curNode->GetParent());
+            int numOfNodesInCurrentLevel = parentNode->GetNumKeys() + 1;
+            // iterate all nodes at current level
+            for (int i = 0; i < numOfNodesInCurrentLevel; i++) {
+                auto *currentLevelNode = new BPTNode(parentNode->GetChild(i));
+                // ensure all keys in this node is the lower bound of the next child
+                // see B+ tree lecture slide page 15, get LB recursively
+                UpdateKeysToNextLB(currentLevelNode);
+            }
+        }
+
+        // Update the current node to its parent
+        curNode = new BPTNode(curNode->GetParent());
     }
 
-    // If the root has no keys, make the first child the new root
     auto *rootNode = new BPTNode(getRoot());
+
+    // If the root has no keys, make the first child the new root
     if (rootNode->GetNumKeys() == 0) {
         char *newRootAddr = rootNode->GetChild(0);
         auto *newRootNode = new BPTNode(newRootAddr);
         newRootNode->SetParent(nullptr);
         setRoot(newRootAddr);
+    } else {
+        // update the keys in root
+        UpdateKeysToNextLB(rootNode);
+    }
+}
+
+void BPT::UpdateKeysToNextLB(BPTNode *nodeToUpdate) {
+    for (int keyIndex = 0; keyIndex < nodeToUpdate->GetNumKeys(); keyIndex++) {
+        auto *nextChild = new BPTNode(nodeToUpdate->GetChild(keyIndex + 1));
+        while (!nextChild->IsLeaf()) {
+            nextChild = new BPTNode(nextChild->GetChild(0));
+        }
+        // update the value of each key to the LB of the next node
+        nodeToUpdate->SetKey(keyIndex, nextChild->GetMinKey());
     }
 }

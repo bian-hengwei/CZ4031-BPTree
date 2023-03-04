@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstring>
+#include <cmath>
 
 #include "bptnode.h"
 #include "storage.h"
@@ -133,4 +134,12 @@ int BPTNode::GetChildIndex(const char *childNodeAddress) const {
     }
     // not found
     return -1;
+}
+
+bool BPTNode::IsNumOfKeysEnough() const {
+    if (IsLeaf()) {
+        return GetNumKeys() >= floor((MAX_KEYS + 1) / 2);
+    } else {
+        return GetNumKeys() >= floor(MAX_KEYS / 2);
+    }
 }

@@ -40,6 +40,8 @@ public:
 
     int GetMinKey() const;
 
+    bool IsNumOfKeysEnough() const;
+
     int GetMaxKey() const;
 
     int GetKey(unsigned short index) const;
