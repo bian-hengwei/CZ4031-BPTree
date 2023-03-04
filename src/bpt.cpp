@@ -266,9 +266,9 @@ void BPT::search(int lowerBoundKey, int upperBoundKey) //take in lower and upper
             if (recordMovie->num_votes >= lowerBoundKey && recordMovie->num_votes <= upperBoundKey) {
                 totalavgrating = recordMovie->avg_rating + totalavgrating;
                 numavgrating++;
-                cout << "Movie Record -- tconst: " << recordMovie->tconst << " avgRating: "
-                     << recordMovie->avg_rating
-                     << " numVotes: " << recordMovie->num_votes << endl;
+//                cout << "Movie Record -- tconst: " << recordMovie->tconst << " avgRating: "
+//                     << recordMovie->avg_rating
+//                     << " numVotes: " << recordMovie->num_votes << endl;
             }
         }
 
@@ -280,12 +280,33 @@ void BPT::search(int lowerBoundKey, int upperBoundKey) //take in lower and upper
             stop = true; // no right sibling or end of search range
         }
     }
+    cout << "found " << numavgrating << " records" << endl;
     if (numavgrating == 0) {
         avgavgrating = 0;
     }
     else {
         avgavgrating = totalavgrating / numavgrating;
     }
+}
+
+char *BPT::Find_Left_Leaf(char *leaf) {
+    // try to find node before this leaf
+    auto *node_fix_l = new BPTNode(leaf);
+    char *child_address = leaf;
+    int node_fix_l_index = 0;
+    while (node_fix_l->GetParent() && node_fix_l_index <= 0) {
+        node_fix_l = new BPTNode(node_fix_l->GetParent());
+        node_fix_l_index = node_fix_l->GetChildIndex(child_address);
+        child_address = node_fix_l->GetAddress();
+    }
+    if (node_fix_l_index > 0) {
+        auto *node_l_l = new BPTNode(node_fix_l->GetChild(node_fix_l_index - 1));
+        while (!node_l_l->IsLeaf()) {
+            node_l_l = new BPTNode(node_l_l->GetChild(node_l_l->GetNumKeys()));
+        }
+        return node_l_l->GetAddress();
+    }
+    return nullptr;
 }
 
 char *BPT::SearchLeafNode(int key) {
@@ -454,6 +475,12 @@ void BPT::SplitLeaf(char *leaf, int keys[], char *children[]) {
         }
     }
     node_l->SetChild(size_l, node_r->GetAddress());
+
+    char *left_leaf = Find_Left_Leaf(leaf);
+    if (left_leaf) {
+        BPTNode *left_leaf_node = new BPTNode(left_leaf);
+        left_leaf_node->SetChild(left_leaf_node->GetNumKeys(), node_l_block);
+    }
 
     InsertToParent(leaf, middle_key, node_l_block, node_r_block);
 

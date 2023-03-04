@@ -62,6 +62,8 @@ private:
     void SplitLeaf(char *leaf, int *keys, char **children);
 
     void InsertToParent(char *node, int middle_key, char *node_l_block, char *node_r_block);
+
+    char *Find_Left_Leaf(char *leaf);
 };
 
 #endif //BPT_H

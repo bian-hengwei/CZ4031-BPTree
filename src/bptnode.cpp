@@ -124,3 +124,13 @@ void BPTNode::RemoveChild(unsigned short index) {
     std::memmove(children_ + index, children_ + index + 1, move_size * (int) sizeof(void *));
     SaveNode();
 }
+
+int BPTNode::GetChildIndex(const char *childNodeAddress) const {
+    for (int i = 0; i < GetNumKeys() + 1; i++) {
+        if (GetChild(i) == childNodeAddress) {
+            return i;
+        }
+    }
+    // not found
+    return -1;
+}
