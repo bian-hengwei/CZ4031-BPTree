@@ -471,6 +471,13 @@ void BPT::Insert(int key, char *address) {
     SplitLeaf(leaf_node->GetAddress(), keys, children);
 }
 
+
+/**
+ * Delete a record given the key of the record in the B+ tree index
+ * @param keyToDelete the key that corresponds to the record
+ * @return true if deletion is successful. If false is returned, it means the key may not exist in the index
+ * @author Song Yu
+ */
 bool BPT::DeleteRecord(int keyToDelete) {
     cout << "deleting key " << keyToDelete << endl;
     // start timer
@@ -541,6 +548,11 @@ bool BPT::DeleteRecord(int keyToDelete) {
     return true;
 }
 
+/**
+ * Fix the B+ tree after the deletion, which may cause changes that could invalidate the B+ tree structure
+ * @param leafNodeAddr the address of the leaf node where a key is deleted
+ * @author Song Yu
+ */
 void BPT::FixTree(char *leafNodeAddr) {
     auto *curNode = new BPTNode(leafNodeAddr);
     while (curNode->GetAddress() != getRoot()) {
@@ -661,6 +673,12 @@ void BPT::FixTree(char *leafNodeAddr) {
     }
 }
 
+/**
+ * Update the keys of non-leaf nodes so that the ith key equals the lower bound of the range of the i+1th pointer
+ * See B+ tree lecture slide page 15 for more information
+ * @param nodeToUpdate the non-leaf node whose keys that need to be updated
+ * @author Song Yu
+ */
 void BPT::UpdateKeysToNextLB(BPTNode *nodeToUpdate) {
     for (int keyIndex = 0; keyIndex < nodeToUpdate->GetNumKeys(); keyIndex++) {
         auto *nextChild = new BPTNode(nodeToUpdate->GetChild(keyIndex + 1));
