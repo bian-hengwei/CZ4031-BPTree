@@ -127,7 +127,7 @@ void BPTNode::RemoveChild(unsigned short index) {
 }
 
 int BPTNode::GetChildIndex(const char *childNodeAddress) const {
-    for (int i = 0; i < GetNumKeys(); i++) {
+    for (int i = 0; i < GetNumKeys() + 1; i++) {
         if (GetChild(i) == childNodeAddress) {
             return i;
         }

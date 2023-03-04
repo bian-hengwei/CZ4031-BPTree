@@ -62,6 +62,8 @@ public:
 
     void RemoveChild(unsigned short index);
 
+    int GetChildIndex(const char *childNodeAddress) const;
+
 private:
     char *pBlock_;
     char *pBlockMem_;

@@ -68,6 +68,8 @@ private:
     void InsertToParent(char *node, int middle_key, char *node_l_block, char *node_r_block);
 
     static void UpdateKeysToNextLB(BPTNode *nodeToUpdate) ;
+
+    char *Find_Left_Leaf(char *leaf);
 };
 
 #endif //BPT_H

@@ -138,7 +138,6 @@ int main() {
         int key = rand() % (2 * n);
         if (!(++cnt % 100000)) {
             std::cout << cnt << endl;
-            break;
         }
         unsigned short slot = block::record::AllocateSlot_D(pRecord);
         dbtypes::WriteRecordMovie_D(pRecord, slot, record_movie);
@@ -181,15 +180,16 @@ int main() {
     cout << "the running time of the retrieval process: " << duration.count() << endl;
     starttime = high_resolution_clock::now();
     vector<char *> v = ScanRecords(storage->GetAddress(), 500, 500);
-    for(int i = 0; i < v.size(); i++) {
-        char *addr = v[i];
-        int offset = (addr - storage->GetAddress()) % BLOCK_SIZE;
-        char *p = addr - offset;
-        RecordMovie *recordMovie = dbtypes::ReadRecordMovie(p, offset);
-        cout << "Movie Record -- tconst: " << recordMovie->tconst << " avgRating: "
-             << recordMovie->avg_rating
-             << " numVotes: " << recordMovie->num_votes << endl;
-    }
+//    for(int i = 0; i < v.size(); i++) {
+//        char *addr = v[i];
+//        int offset = (addr - storage->GetAddress()) % BLOCK_SIZE;
+//        char *p = addr - offset;
+//        RecordMovie *recordMovie = dbtypes::ReadRecordMovie(p, offset);
+//        cout << "Movie Record -- tconst: " << recordMovie->tconst << " avgRating: "
+//             << recordMovie->avg_rating
+//             << " numVotes: " << recordMovie->num_votes << endl;
+//    }
+    cout << "found " << v.size() << " records" << endl;
     endtime = high_resolution_clock::now();
     duration = duration_cast<seconds>(endtime - starttime);
     cout
@@ -208,15 +208,16 @@ int main() {
     cout << "the running time of the retrieval process: " << duration.count() << endl;
     starttime = high_resolution_clock::now();
     v = ScanRecords(storage->GetAddress(), 30000, 40000);
-    for(int i = 0; i < v.size(); i++) {
-        char *addr = v[i];
-        int offset = (addr - storage->GetAddress()) % BLOCK_SIZE;
-        char *p = addr - offset;
-        RecordMovie *recordMovie = dbtypes::ReadRecordMovie(p, offset);
-        cout << "Movie Record -- tconst: " << recordMovie->tconst << " avgRating: "
-             << recordMovie->avg_rating
-             << " numVotes: " << recordMovie->num_votes << endl;
-    }
+//    for(int i = 0; i < v.size(); i++) {
+//        char *addr = v[i];
+//        int offset = (addr - storage->GetAddress()) % BLOCK_SIZE;
+//        char *p = addr - offset;
+//        RecordMovie *recordMovie = dbtypes::ReadRecordMovie(p, offset);
+//        cout << "Movie Record -- tconst: " << recordMovie->tconst << " avgRating: "
+//             << recordMovie->avg_rating
+//             << " numVotes: " << recordMovie->num_votes << endl;
+//    }
+    cout << "found " << v.size() << " records" << endl;
     endtime = high_resolution_clock::now();
     duration = duration_cast<seconds>(endtime - starttime);
     cout
