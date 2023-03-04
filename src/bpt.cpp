@@ -490,7 +490,6 @@ void BPT::Insert(int key, char *address) {
  * @author Song Yu
  */
 bool BPT::DeleteRecord(int keyToDelete) {
-    cout << "deleting key " << keyToDelete << endl;
     // find nodes of the target
     auto *leafNode = new BPTNode(SearchLeafNode(keyToDelete));
 
@@ -528,8 +527,6 @@ bool BPT::DeleteRecord(int keyToDelete) {
     long offset = (recordAddr - storage_->GetAddress()) % BLOCK_SIZE;
     // the block where the record resides
     char *pBlock = recordAddr - offset;
-    cout << "Freeing block " << (void *) pBlock << " with offset " << offset << " for target Index " << targetIndex
-         << endl;
     block::record::FreeSlot_D(pBlock, offset);
 
     // delete the corresponding key & child;
