@@ -119,6 +119,19 @@ int GetOccupiedCount_D(char *pBlock) {
     return occupied_count;
 }
 
+bool *GetOccupied(char *pBlockMem) {
+    RecordBlockHeader *record_block_header = dbtypes::ReadRecordBlockHeader(pBlockMem);
+    return record_block_header->occupied;
+}
+
+bool *GetOccupied_D(char *pBlock) {
+    char *pBlockMem = static_cast<char *>(operator new(BLOCK_SIZE));
+    Storage::ReadBlock(pBlockMem, pBlock);
+    bool *occupied = GetOccupied(pBlockMem);
+    operator delete(pBlockMem);
+    return occupied;
+}
+
 int GetEmptyCount(char *pBlockMem) {
     return RECORD_PER_BLOCK - GetOccupiedCount(pBlockMem);
 }

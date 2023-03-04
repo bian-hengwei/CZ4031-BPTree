@@ -13,6 +13,29 @@
 #include "dbtypes.h"
 #include "storage.h"
 
+vector<char *> ScanRecords(char *storage, int lo, int hi) {
+    vector<char *> records;
+    char *p = storage;
+    while (p < storage + DISK_CAPACITY) {
+        if (block::GetBlockType_D(p) != BlockType::RECORD) {
+            p += BLOCK_SIZE;
+            continue;
+        }
+        bool *occupied = block::record::GetOccupied_D(p);
+        for (int i = 0; i < RECORD_PER_BLOCK; i++) {
+            if (!occupied[i]) {
+                continue;
+            }
+            int offset = RECORD_BLOCK_OFFSET_TOTAL + PACKED_RECORD_SIZE * i;
+            RecordMovie *record_movie = dbtypes::ReadRecordMovie_D(p, offset);
+            if (lo <= record_movie->num_votes && record_movie->num_votes <= hi) {
+                records.push_back(p + offset);
+            }
+        }
+        p += BLOCK_SIZE;
+    }
+}
+
 int main() {
     Storage *storage = new Storage(DISK_CAPACITY);
 
