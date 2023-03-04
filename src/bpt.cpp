@@ -13,8 +13,8 @@
 #include <queue>
 #include <vector>
 
-BPT::BPT(char *pRoot, const Storage& storage) : root_(pRoot), intialized_(false), storage_(storage), noofnodes(1),
-                                         nooflevels(1), noofindexnodes(1), noofdatablocks(0), avgavgrating(0) {}
+BPT::BPT(char *pRoot, const Storage &storage) : root_(pRoot), intialized_(false), storage_(storage), noofnodes(1),
+                                                nooflevels(1), noofindexnodes(1), noofdatablocks(0), avgavgrating(0) {}
 
 BPT::~BPT() = default;
 
@@ -73,7 +73,7 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
     char *nodeAddress;
     int curKeyCount = 0;
     bool setmax = false;
-    
+
     //Setup first note
     addresses.push_back(getRoot());
     leafnode->SetLeaf(true);
@@ -417,6 +417,7 @@ void BPT::InsertToParent(char *node, int middle_key, char *node_l_block, char *n
     if (node == root_) {
         // allocate a new block for root
         char *new_root_block = storage_.AllocateBlock();
+        block::bpt::Initialize_D(new_root_block);
         auto *new_root = new BPTNode(new_root_block);
         node_l->SetParent(new_root_block);
         node_r->SetParent(new_root_block);
@@ -463,6 +464,8 @@ void BPT::SplitNonLeaf(char *node, int keys[], char *children[]) {
     // initialize new blocks
     char *node_l_block = storage_.AllocateBlock();
     char *node_r_block = storage_.AllocateBlock();
+    block::bpt::Initialize_D(node_l_block);
+    block::bpt::Initialize_D(node_r_block);
     auto *node_l = new BPTNode(node_l_block);
     auto *node_r = new BPTNode(node_r_block);
     node_l->SetLeaf(false);
@@ -484,7 +487,6 @@ void BPT::SplitNonLeaf(char *node, int keys[], char *children[]) {
     // copy children
     for (int i = 0; i < MAX_KEYS + 2; i++) {
         auto *temp = new BPTNode(children[i]);
-        cout << temp->GetNumKeys();
         if (i <= size_l) {
             node_l->InsertChild(i, children[i]);
             temp->SetParent(node_l->GetAddress());
@@ -506,6 +508,8 @@ void BPT::SplitLeaf(char *leaf, int keys[], char *children[]) {
 
     char *node_l_block = storage_.AllocateBlock();
     char *node_r_block = storage_.AllocateBlock();
+    block::bpt::Initialize_D(node_l_block);
+    block::bpt::Initialize_D(node_r_block);
     auto *node_l = new BPTNode(node_l_block);
     auto *node_r = new BPTNode(node_r_block);
     node_l->SetLeaf(true);

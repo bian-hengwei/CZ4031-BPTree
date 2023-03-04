@@ -10,7 +10,7 @@
 
 class BPT {
 public:
-    explicit BPT(char *pRoot, const Storage& storage);
+    explicit BPT(char *pRoot, const Storage &storage);
 
     ~BPT();
 

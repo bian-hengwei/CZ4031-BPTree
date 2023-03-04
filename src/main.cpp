@@ -13,9 +13,7 @@
 #include "dbtypes.h"
 #include "storage.h"
 
-using namespace std;
-
-int main() {
+void test() {
     Storage storage(DISK_CAPACITY);
 
     // read data
@@ -142,24 +140,84 @@ int main() {
         bpttree.PrintTree();
     }
 
-     cout << "--- EXPERIMENT 3 ---" << endl;
-     cout << "--- Retrieving movies with the “numVotes” equal to 500  ---" << endl;
-     bpttree.search(500, 750);
-     cout << "number of index nodes the process accesses: " << bpttree.getIndexNodes() << endl;
-     cout << "number of data blocks the process accesses: " << bpttree.getDataBlocks() << endl;
-     cout << "average of “averageRating’s” of the records that are returned: " << bpttree.getAvgAvgRating() << endl;
-     cout << "the running time of the retrieval process: " << "" << endl;
-     cout << "the number of data blocks that would be accessed by a brute-force linear scan method and its running time : " << "" << endl;
+    cout << "--- EXPERIMENT 3 ---" << endl;
+    cout << "--- Retrieving movies with the “numVotes” equal to 500  ---" << endl;
+    bpttree.search(500, 750);
+    cout << "number of index nodes the process accesses: " << bpttree.getIndexNodes() << endl;
+    cout << "number of data blocks the process accesses: " << bpttree.getDataBlocks() << endl;
+    cout << "average of “averageRating’s” of the records that are returned: " << bpttree.getAvgAvgRating() << endl;
+    cout << "the running time of the retrieval process: " << "" << endl;
+    cout
+            << "the number of data blocks that would be accessed by a brute-force linear scan method and its running time : "
+            << "" << endl;
 
 
-     cout << "--- EXPERIMENT 4 ---" << endl;
-     cout << "--- Retrieving movies with the “numVotes” equal to 500  ---" << endl;
-     bpttree.search(30000, 40000);
-     cout << "number of index nodes the process accesses: " << bpttree.getIndexNodes() << endl;
-     cout << "number of data blocks the process accesses: " << bpttree.getDataBlocks() << endl;
-     cout << "average of “averageRating’s” of the records that are returned: " << bpttree.getAvgAvgRating() << endl;
-     cout << "the running time of the retrieval process: " << "" << endl;
-     cout << "the number of data blocks that would be accessed by a brute-force linear scan method and its running time : " << "" << endl;
+    cout << "--- EXPERIMENT 4 ---" << endl;
+    cout << "--- Retrieving movies with the “numVotes” equal to 500  ---" << endl;
+    bpttree.search(30000, 40000);
+    cout << "number of index nodes the process accesses: " << bpttree.getIndexNodes() << endl;
+    cout << "number of data blocks the process accesses: " << bpttree.getDataBlocks() << endl;
+    cout << "average of “averageRating’s” of the records that are returned: " << bpttree.getAvgAvgRating() << endl;
+    cout << "the running time of the retrieval process: " << "" << endl;
+    cout
+            << "the number of data blocks that would be accessed by a brute-force linear scan method and its running time : "
+            << "" << endl;
 
     // return 0;
+}
+
+int main() {
+    Storage storage(DISK_CAPACITY);
+
+    // read data
+    cout << "Read data from data/data.tsv..." << endl;
+    ifstream data_tsv("../data/data.tsv");
+    string line;
+
+    getline(data_tsv, line);
+
+    char *pRoot = storage.AllocateBlock();
+    block::bpt::Initialize_D(pRoot);
+    BPT *bpt = new BPT(pRoot, storage);
+    BPTNode *root = new BPTNode(pRoot);
+    root->SetLeaf(true);
+
+    int cnt = 0;
+
+    while (getline(data_tsv, line)) {
+        auto *record_movie = new RecordMovie();
+        stringstream ss(line);
+        string dataItem;
+        vector<string> result;
+        while (getline(ss, dataItem, '\t')) {
+            result.push_back(dataItem);
+        }
+        std::strncpy(record_movie->tconst, result[0].c_str(), TCONST_SIZE);
+        record_movie->avg_rating = stof(result[1]);
+        record_movie->num_votes = stoi(result[2]);
+
+//        cout << "current record read -- tconst: " << record_movie->tconst << " avgRating: " << record_movie->avg_rating
+//             << " numVotes: " << record_movie->num_votes
+//             << endl;
+
+        char *pBlock = storage.AllocateBlock();
+        block::record::Initialize_D(pBlock);
+        if (storage.GetNumOfBlocks() == 0 || storage.IsLatestBlockFull()) {
+            pBlock = storage.AllocateBlock();
+            block::record::Initialize_D(pBlock);
+        }
+        else {
+            pBlock = storage.GetLatestBlock();
+        }
+        unsigned short slot = block::record::AllocateSlot_D(pBlock);
+        dbtypes::WriteRecordMovie_D(pBlock, slot, record_movie);
+
+        bpt->Insert(record_movie->num_votes, pBlock + slot);
+
+        if (!(++cnt % 10000)) {
+            std::cout << cnt << endl;
+        }
+    }
+    data_tsv.close();
+    bpt->PrintTree();
 }
