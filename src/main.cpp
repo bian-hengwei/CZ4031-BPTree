@@ -34,6 +34,7 @@ vector<char *> ScanRecords(char *storage, int lo, int hi) {
         }
         p += BLOCK_SIZE;
     }
+    return records;
 }
 
 int main() {
@@ -142,4 +143,15 @@ int main() {
     cout
             << "the number of data blocks that would be accessed by a brute-force linear scan method and its running time : "
             << "" << endl;
+
+    vector<char *> v = ScanRecords(storage->GetAddress(), 500, 750);
+    for(int i = 0; i < v.size(); i++) {
+        char *addr = v[i];
+        int offset = (addr - storage->GetAddress()) % BLOCK_SIZE;
+        char *p = addr - offset;
+        RecordMovie *recordMovie = dbtypes::ReadRecordMovie(p, offset);
+        cout << "Movie Record -- tconst: " << recordMovie->tconst << " avgRating: "
+             << recordMovie->avg_rating
+             << " numVotes: " << recordMovie->num_votes << endl;
+    }
 }
