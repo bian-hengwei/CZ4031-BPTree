@@ -32,7 +32,7 @@ char *Storage::FindSpaceForBlock() {
     // if no more space, come back to search for an available slot;
     char *pBlock = pStorage_;
     while (pBlock < pStorage_ + disk_size_) {
-        if (!block::IsUsed(pBlock)) {
+        if (!block::IsUsed_D(pBlock)) {
             return pBlock;
         }
         pBlock += BLOCK_SIZE;
@@ -87,7 +87,7 @@ void Storage::WriteBlock(char *pBlock, char *pBuffer) {
 }
 
 void Storage::FreeBlock(char *pBlock) {
-    block::Free(pBlock);
+    block::Free_D(pBlock);
     auto it = find(blocks_.begin(), blocks_.end(), pBlock);
     if (it != blocks_.end()) {
         blocks_.erase(it);
@@ -97,15 +97,15 @@ void Storage::FreeBlock(char *pBlock) {
 int Storage::GetNumOfRecords() const {
     int count = 0;
     for (const auto &block: blocks_) {
-        if (block::GetBlockType(block) == BlockType::RECORD) {
-            count += block::record::GetOccupiedCount(block);
+        if (block::GetBlockType_D(block) == BlockType::RECORD) {
+            count += block::record::GetOccupiedCount_D(block);
         }
     }
     return count;
 }
 
 bool Storage::IsLatestBlockFull() {
-    return block::record::IsFull(blocks_[blocks_.size() - 1]);
+    return block::record::IsFull_D(blocks_[blocks_.size() - 1]);
 }
 
 char *Storage::GetLatestBlock() {
