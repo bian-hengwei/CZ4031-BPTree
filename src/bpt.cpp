@@ -360,8 +360,7 @@ void BPT::search(int lowerBoundKey, int upperBoundKey) //take in lower and upper
         // Follow the right sibling pointer to the next leaf node
         if (!stop && node->GetChild(node->GetNumKeys()) != nullptr) {
             node = new BPTNode(node->GetChild(node->GetNumKeys()));
-        }
-        else {
+        } else {
             stop = true; // no right sibling or end of search range
         }
     }
@@ -427,8 +426,7 @@ void BPT::InsertToParent(char *node, int middle_key, char *node_l_block, char *n
         // update root address
         root_ = new_root_block;
         nooflevels++;
-    }
-    else {
+    } else {
         // if node is not root, we find its parent
         char *parent = current_node->GetParent();
         auto *parent_node = new BPTNode(parent);
@@ -571,16 +569,24 @@ bool BPT::DeleteRecord(int keyToDelete) {
     }
 
     if (!recordAddr || targetIndex == -1) {
-        cout << "The key " << keyToDelete << " is not in tree. Unable to delete" << endl;
-        // end timer
-        auto finish = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed = finish - start;
-        std::cout << "Elapsed time: " << elapsed.count() << " s\n";
-        return false;
+        char *nextNodeAddr = leafNode->GetChild(leafNode->GetNumKeys());
+        auto *nextNode = new BPTNode(nextNodeAddr);
+        if (nextNode->GetMinKey() == keyToDelete) {
+            leafNode = nextNode;
+            recordAddr = nextNode->GetChild(0);
+            targetIndex = 0;
+        } else {
+            cout << "The key " << keyToDelete << " is not in tree. Unable to delete" << endl;
+            // end timer
+            auto finish = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = finish - start;
+            std::cout << "Elapsed time: " << elapsed.count() << " s\n";
+            return false;
+        }
     }
 
     // free record
-    int offset = (recordAddr - storage_.GetAddress()) % BLOCK_SIZE;
+    int offset = (recordAddr - storage_->GetAddress()) % BLOCK_SIZE;
     // the block where the record resides
     char *pBlock = recordAddr - offset;
     block::record::FreeSlot_D(pBlock, offset);
