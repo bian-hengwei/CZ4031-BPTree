@@ -514,11 +514,13 @@ bool BPT::DeleteRecord(int keyToDelete) {
                 recordAddr = leafNode->GetChild(0);
                 targetIndex = 0;
             } else {
-                cout << "The key " << keyToDelete << " is not in tree. Unable to delete" << endl;
+                cout << "The key " << keyToDelete
+                     << " is not in tree. All records containing the key have been deleted already:)" << endl;
                 return false;
             }
         } else {
-            cout << "The key " << keyToDelete << " is not in tree. Unable to delete" << endl;
+            cout << "The key " << keyToDelete
+                 << " is not in tree. All records containing the key have been deleted already:)" << endl;
             return false;
         }
     }
