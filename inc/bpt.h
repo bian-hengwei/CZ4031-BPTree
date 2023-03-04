@@ -24,19 +24,13 @@ public:
 
     void initializeBPT(vector<int> keylist, vector<char *> addresslist);
 
-    int getNoofNodes() const;
+    int getNumOfNodes() const;
 
-    int getNoofLevels() const;
+    int getNumOfLevels() const;
 
     void PrintTree();
 
     void search(int lowerBoundKey, int upperBoundKey);
-
-    int getIndexNodes() const;
-
-    int getDataBlocks() const;
-
-    int getAvgAvgRating() const;
 
     void Insert(int key, char *address);
 
@@ -45,13 +39,10 @@ public:
 
 private:
     char *root_;
-    bool intialized_;
+    bool initialized_;
     Storage *storage_;
-    int noofnodes;
-    int nooflevels;
-    int noofindexnodes;
-    int noofdatablocks;
-    int avgavgrating;
+    int num_of_nodes_;
+    int num_of_levels_;
 
     static int SearchKeyIndex(BPTNode *node, int key);
 
