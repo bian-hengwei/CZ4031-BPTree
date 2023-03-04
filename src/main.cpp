@@ -2,9 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <cstring>
-#include <cassert>
 #include <vector>
-#include <cstdlib>
 #include <chrono>
 
 #include "block.h"
@@ -24,7 +22,8 @@ vector<char *> ScanRecords(char *storage, int lo, int hi) {
             p += BLOCK_SIZE;
             continue;
         }
-        bool *occupied = block::record::GetOccupied_D(p);
+        bool occupied[10];
+        block::record::GetOccupied_D(p, occupied);
         for (int i = 0; i < RECORD_PER_BLOCK; i++) {
             if (!occupied[i]) {
                 continue;
@@ -84,10 +83,6 @@ int main() {
         record_movie->avg_rating = stof(result[1]);
         record_movie->num_votes = stoi(result[2]);
 
-//        cout << "current record read -- tconst: " << record_movie->tconst << " avgRating: " << record_movie->avg_rating
-//             << " numVotes: " << record_movie->num_votes
-//             << endl;
-
         if (pBlock == nullptr || block::record::IsFull_D(pBlock)) {
             pBlock = storage->AllocateBlock();
             block::record::Initialize_D(pBlock);
@@ -100,6 +95,7 @@ int main() {
 
         if (!(++cnt % 100000)) {
             std::cout << cnt << endl;
+            break;
         }
     }
     data_tsv.close();
@@ -152,7 +148,7 @@ int main() {
             << num_of_blocks_storing_data << ", "  << duration.count() << endl;
 
     cout << "--- EXPERIMENT 4 ---" << endl;
-    cout << "--- Retrieving movies with the “numVotes” equal to 500  ---" << endl;
+    cout << "--- Retrieving movies with the “numVotes” between 30000 and 40000  ---" << endl;
     starttime = high_resolution_clock::now();
     bpt->search(30000, 40000);
     endtime = high_resolution_clock::now();
@@ -177,6 +173,4 @@ int main() {
     cout
             << "the number of data blocks that would be accessed by a brute-force linear scan method and its running time : "
             << num_of_blocks_storing_data << ", "  << duration.count() << endl;
-
-
 }
