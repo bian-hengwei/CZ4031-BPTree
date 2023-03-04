@@ -10,7 +10,7 @@
 
 class BPT {
 public:
-    explicit BPT(char *pRoot, const Storage &storage);
+    explicit BPT(char *pRoot, Storage *storage);
 
     ~BPT();
 
@@ -50,7 +50,7 @@ public:
 private:
     char *root_;
     bool intialized_;
-    Storage storage_;
+    Storage *storage_;
     int noofnodes;
     int nooflevels;
     int noofindexnodes;
