@@ -46,6 +46,10 @@ int GetOccupiedCount(char *pBlockMem);
 
 int GetOccupiedCount_D(char *pBlock);
 
+void GetOccupied(char *pBlockMem, bool *occupied);
+
+void GetOccupied_D(char *pBlock, bool *occupied);
+
 int GetEmptyCount(char *pBlockMem);
 
 int GetEmptyCount_D(char *pBlock);
