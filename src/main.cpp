@@ -148,8 +148,8 @@ int main() {
     }
     data_tsv.close();
 
-    num_of_nodes_in_bpt = bpt->getNoofNodes();
-    num_of_levels_in_bpt = bpt->getNoofLevels();
+    num_of_nodes_in_bpt = bpt->getNumOfNodes();
+    num_of_levels_in_bpt = bpt->getNumOfLevels();
 
     std::cout << "Experiment 1" << std::endl;
     std::cout << "the number of records: " << num_of_records << std::endl;
@@ -174,9 +174,6 @@ int main() {
     bpt->search(500, 500);
     auto endtime = high_resolution_clock::now();
     auto duration = duration_cast<seconds>(endtime - starttime);
-    cout << "number of index nodes the process accesses: " << bpt->getIndexNodes() << endl;
-    cout << "number of data blocks the process accesses: " << bpt->getDataBlocks() << endl;
-    cout << "average of “averageRating’s” of the records that are returned: " << bpt->getAvgAvgRating() << endl;
     cout << "the running time of the retrieval process: " << duration.count() << endl;
     starttime = high_resolution_clock::now();
     vector<char *> v = ScanRecords(storage->GetAddress(), 500, 500);
@@ -194,7 +191,7 @@ int main() {
     duration = duration_cast<seconds>(endtime - starttime);
     cout
             << "the number of data blocks that would be accessed by a brute-force linear scan method and its running time : "
-            << num_of_blocks_storing_data << ", "  << duration.count() << endl;
+            << num_of_blocks_storing_data << ", " << duration.count() << endl;
 
     cout << "--- EXPERIMENT 4 ---" << endl;
     cout << "--- Retrieving movies with the “numVotes” between 30000 and 40000  ---" << endl;
@@ -202,9 +199,6 @@ int main() {
     bpt->search(30000, 40000);
     endtime = high_resolution_clock::now();
     duration = duration_cast<seconds>(endtime - starttime);
-    cout << "number of index nodes the process accesses: " << bpt->getIndexNodes() << endl;
-    cout << "number of data blocks the process accesses: " << bpt->getDataBlocks() << endl;
-    cout << "average of “averageRating’s” of the records that are returned: " << bpt->getAvgAvgRating() << endl;
     cout << "the running time of the retrieval process: " << duration.count() << endl;
     starttime = high_resolution_clock::now();
     v = ScanRecords(storage->GetAddress(), 30000, 40000);
@@ -222,5 +216,5 @@ int main() {
     duration = duration_cast<seconds>(endtime - starttime);
     cout
             << "the number of data blocks that would be accessed by a brute-force linear scan method and its running time : "
-            << num_of_blocks_storing_data << ", "  << duration.count() << endl;
+            << num_of_blocks_storing_data << ", " << duration.count() << endl;
 }
