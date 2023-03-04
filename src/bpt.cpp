@@ -13,8 +13,8 @@
 #include <queue>
 #include <vector>
 
-BPT::BPT(char *pRoot, const Storage &storage) : root_(pRoot), intialized_(false), storage_(storage), noofnodes(1),
-                                                nooflevels(1), noofindexnodes(1), noofdatablocks(0), avgavgrating(0) {}
+BPT::BPT(char *pRoot, Storage *storage) : root_(pRoot), intialized_(false), storage_(storage), noofnodes(1),
+                                          nooflevels(1), noofindexnodes(1), noofdatablocks(0), avgavgrating(0) {}
 
 BPT::~BPT() = default;
 
@@ -90,7 +90,7 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
     // This loop initializes all leaf nodes.
     while (count < keylist.size()) {
         if (curKeyCount == maxKeyCount) {
-            nodeAddress = storage_.AllocateBlock();
+            nodeAddress = storage_->AllocateBlock();
             leafnode->SetChild(MAX_KEYS, nodeAddress);
 
             block::bpt::Initialize_D(nodeAddress);
@@ -132,7 +132,7 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
         maxKeyCount = MAX_KEYS;
         setmax = false;
 
-        nodeAddress = storage_.AllocateBlock();
+        nodeAddress = storage_->AllocateBlock();
         block::bpt::Initialize_D(nodeAddress);
         nonleafNode = new BPTNode(nodeAddress);
 
@@ -150,7 +150,7 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
         for (int i = 0; i < nodes.size(); i++) {
             if (curKeyCount == maxKeyCount) {
 
-                nodeAddress = storage_.AllocateBlock();
+                nodeAddress = storage_->AllocateBlock();
                 block::bpt::Initialize_D(nodeAddress);
                 nonleafNode = new BPTNode(nodeAddress);
                 nonleafNode->SetLeaf(false);
@@ -345,7 +345,7 @@ void BPT::search(int lowerBoundKey, int upperBoundKey) //take in lower and upper
             if (node->GetKey(i) >= lowerBoundKey && node->GetKey(i) <= upperBoundKey) {
                 // print the movie record, found
                 char *pRecord = node->GetChild(i);
-                int offset = (pRecord - storage_.GetAddress()) % BLOCK_SIZE;
+                int offset = (pRecord - storage_->GetAddress()) % BLOCK_SIZE;
                 char *pBlockMem = pRecord - offset;
                 RecordMovie *recordMovie = dbtypes::ReadRecordMovie(pBlockMem, offset);
                 totalavgrating = recordMovie->avg_rating + totalavgrating;
@@ -416,7 +416,7 @@ void BPT::InsertToParent(char *node, int middle_key, char *node_l_block, char *n
     auto *node_r = new BPTNode(node_r_block);
     if (node == root_) {
         // allocate a new block for root
-        char *new_root_block = storage_.AllocateBlock();
+        char *new_root_block = storage_->AllocateBlock();
         block::bpt::Initialize_D(new_root_block);
         auto *new_root = new BPTNode(new_root_block);
         node_l->SetParent(new_root_block);
@@ -428,6 +428,7 @@ void BPT::InsertToParent(char *node, int middle_key, char *node_l_block, char *n
         new_root->InsertChild(1, node_r_block);
         // update root address
         root_ = new_root_block;
+        nooflevels++;
     }
     else {
         // if node is not root, we find its parent
@@ -458,13 +459,14 @@ void BPT::InsertToParent(char *node, int middle_key, char *node_l_block, char *n
  * Splits a non-leaf node
  */
 void BPT::SplitNonLeaf(char *node, int keys[], char *children[]) {
+    noofnodes++;
     int middle_key;
     int size_l = (MAX_KEYS + 1) / 2;  // 7 keys & 8 children; size_r = MAX_KEYS - size_l;  // 7 keys & 8 children
 
     // initialize new blocks
-    char *node_l_block = storage_.AllocateBlock();
-    char *node_r_block = storage_.AllocateBlock();
+    char *node_l_block = storage_->AllocateBlock();
     block::bpt::Initialize_D(node_l_block);
+    char *node_r_block = storage_->AllocateBlock();
     block::bpt::Initialize_D(node_r_block);
     auto *node_l = new BPTNode(node_l_block);
     auto *node_r = new BPTNode(node_r_block);
@@ -499,16 +501,17 @@ void BPT::SplitNonLeaf(char *node, int keys[], char *children[]) {
 
     InsertToParent(node, middle_key, node_l_block, node_r_block);
 
-    storage_.FreeBlock(node);
+    storage_->FreeBlock(node);
 }
 
 void BPT::SplitLeaf(char *leaf, int keys[], char *children[]) {
+    noofnodes++;
     int size_l = (MAX_KEYS + 1) / 2;  // 7 keys; size_r = MAX_KEYS + 1 - size_l;  // 8 keys
     int middle_key = keys[size_l];
 
-    char *node_l_block = storage_.AllocateBlock();
-    char *node_r_block = storage_.AllocateBlock();
+    char *node_l_block = storage_->AllocateBlock();
     block::bpt::Initialize_D(node_l_block);
+    char *node_r_block = storage_->AllocateBlock();
     block::bpt::Initialize_D(node_r_block);
     auto *node_l = new BPTNode(node_l_block);
     auto *node_r = new BPTNode(node_r_block);
@@ -538,7 +541,7 @@ void BPT::SplitLeaf(char *leaf, int keys[], char *children[]) {
 
     InsertToParent(leaf, middle_key, node_l_block, node_r_block);
 
-    storage_.FreeBlock(leaf);
+    storage_->FreeBlock(leaf);
 }
 
 void BPT::Insert(int key, char *address) {
