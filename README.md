@@ -2,9 +2,6 @@
 
 Project 1 repository for CZ4031.
 
-**THERE ARE KNOWN BUGS WITH BULKLOADING AND DELETE**
-**THOUGH BUGGY, THIS REPO IS ARCHIEVED DUE TO LIMITED TIME**
-
 ## HOW TO RUN
 
 Under root folder, execute
