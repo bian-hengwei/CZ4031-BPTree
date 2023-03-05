@@ -14,8 +14,8 @@
 
 using namespace std::chrono;
 
-vector<char *> ScanRecords(char *storage, int lo, int hi) {
-    vector<char *> records;
+std::vector<char *> ScanRecords(char *storage, int lo, int hi) {
+    std::vector<char *> records;
     char *p = storage;
     while (p < storage + DISK_CAPACITY) {
         if (block::GetBlockType_D(p) != BlockType::RECORD) {
@@ -50,9 +50,9 @@ int main() {
     root->SetLeaf(true);
 
     // read data
-    cout << "Read data from data/data.tsv..." << endl;
-    ifstream data_tsv("../data/data.tsv");
-    string line;
+    std::cout << "Read data from data/data.tsv..." << std::endl;
+    std::ifstream data_tsv("../data/data.tsv");
+    std::string line;
     getline(data_tsv, line);
 
     int cnt = 0;
@@ -74,9 +74,9 @@ int main() {
         num_of_records++;
 
         auto *record_movie = new RecordMovie();
-        stringstream ss(line);
-        string dataItem;
-        vector<string> result;
+        std::stringstream ss(line);
+        std::string dataItem;
+        std::vector<std::string> result;
         while (getline(ss, dataItem, '\t')) {
             result.push_back(dataItem);
         }
@@ -95,9 +95,10 @@ int main() {
         bpt->Insert(record_movie->num_votes, pBlock + slot);
 
         if (!(++cnt % 100000)) {
-            std::cout << cnt << endl;
+            std::cout << "Loading line " << cnt << std::endl;
         }
     }
+    std::cout << std::endl;
     data_tsv.close();
 
     num_of_nodes_in_bpt = bpt->getNumOfNodes();
@@ -120,74 +121,82 @@ int main() {
     }
     std::cout << std::endl << std::endl;
 
-    cout << "--- EXPERIMENT 3 ---" << endl;
-    cout << "--- Retrieving movies with the “numVotes” equal to 500  ---" << endl;
-    auto starttime = high_resolution_clock::now();
-    bpt->search(500, 500);
-    auto endtime = high_resolution_clock::now();
-    auto duration = duration_cast<seconds>(endtime - starttime);
-    cout << "the running time of the retrieval process: " << duration.count() << endl;
-    starttime = high_resolution_clock::now();
-    vector<char *> v = ScanRecords(storage->GetAddress(), 500, 500);
-//    for(int i = 0; i < v.size(); i++) {
-//        char *addr = v[i];
-//        int offset = (addr - storage->GetAddress()) % BLOCK_SIZE;
-//        char *p = addr - offset;
-//        RecordMovie *recordMovie = dbtypes::ReadRecordMovie(p, offset);
-//        cout << "Movie Record -- tconst: " << recordMovie->tconst << " avgRating: "
-//             << recordMovie->avg_rating
-//             << " numVotes: " << recordMovie->num_votes << endl;
-//    }
-    cout << "found " << v.size() << " records" << endl;
-    endtime = high_resolution_clock::now();
-    duration = duration_cast<seconds>(endtime - starttime);
-    cout
-            << "the number of data blocks that would be accessed by a brute-force linear scan method and its running time : "
-            << num_of_blocks_storing_data << ", " << duration.count() << endl;
+    std::cout << "--- EXPERIMENT 3 ---" << std::endl;
+    std::cout << "--- Retrieving movies with the “numVotes” equal to 500  ---" << std::endl;
+    std::vector<char *> v;
+    int record_count = 0;
+    int index_block_count = 0;
+    int data_block_count = 0;
+    float avg_rating = 0.;
+    auto start_time = high_resolution_clock::now();
+    v = bpt->Search(500, 500, record_count, index_block_count, data_block_count, avg_rating);
+    auto end_time = high_resolution_clock::now();
+    std::chrono::duration<double> duration = end_time - start_time;
+    std::cout << "found " << record_count << " records" << std::endl;
+    std::cout << "average rating " << avg_rating << std::endl;
+    std::cout << "number of index blocks " << index_block_count << std::endl;
+    std::cout << "number of data blocks " << data_block_count << std::endl;
+    std::cout << "the running time of the retrieval process: " << duration.count() << std::endl;
+    start_time = high_resolution_clock::now();
+    v = ScanRecords(storage->GetAddress(), 500, 500);
+    std::cout << "found " << v.size() << " records" << std::endl;
+    end_time = high_resolution_clock::now();
+    duration = end_time - start_time;
+    std::cout << "the number of data blocks that would be accessed "
+            << "by a brute-force linear scan method and its running time : "
+            << num_of_blocks_storing_data << ", " << duration.count() << std::endl;
+    std::cout << std::endl;
 
-    cout << "--- EXPERIMENT 4 ---" << endl;
-    cout << "--- Retrieving movies with the “numVotes” between 30000 and 40000  ---" << endl;
-    starttime = high_resolution_clock::now();
-    bpt->search(30000, 40000);
-    endtime = high_resolution_clock::now();
-    duration = duration_cast<seconds>(endtime - starttime);
-    cout << "the running time of the retrieval process: " << duration.count() << endl;
-    starttime = high_resolution_clock::now();
+    std::cout << "--- EXPERIMENT 4 ---" << std::endl;
+    std::cout << "--- Retrieving movies with the “numVotes” between 30000 and 40000  ---" << std::endl;
+    record_count = 0;
+    index_block_count = 0;
+    data_block_count = 0;
+    avg_rating = 0.;
+    start_time = high_resolution_clock::now();
+    v = bpt->Search(30000, 40000, record_count, index_block_count, data_block_count, avg_rating);
+    end_time = high_resolution_clock::now();
+    duration = end_time - start_time;
+    std::cout << "found " << record_count << " records" << std::endl;
+    std::cout << "average rating " << avg_rating << std::endl;
+    std::cout << "number of index blocks " << index_block_count << std::endl;
+    std::cout << "number of data blocks " << data_block_count << std::endl;
+    std::cout << "the running time of the retrieval process: " << duration.count() << std::endl;
+    start_time = high_resolution_clock::now();
     v = ScanRecords(storage->GetAddress(), 30000, 40000);
-//    for(int i = 0; i < v.size(); i++) {
-//        char *addr = v[i];
-//        int offset = (addr - storage->GetAddress()) % BLOCK_SIZE;
-//        char *p = addr - offset;
-//        RecordMovie *recordMovie = dbtypes::ReadRecordMovie(p, offset);
-//        cout << "Movie Record -- tconst: " << recordMovie->tconst << " avgRating: "
-//             << recordMovie->avg_rating
-//             << " numVotes: " << recordMovie->num_votes << endl;
-//    }
-    cout << "found " << v.size() << " records" << endl;
-    endtime = high_resolution_clock::now();
-    duration = duration_cast<seconds>(endtime - starttime);
-    cout
-            << "the number of data blocks that would be accessed by a brute-force linear scan method and its running time : "
-            << num_of_blocks_storing_data << ", " << duration.count() << endl;
-    cout << "--- EXPERIMENT 5 ---" << endl;
-    cout << "--- Delete those movies with the attribute “numVotes” equal to 1,000  ---" << endl;
+    std::cout << "found " << v.size() << " records" << std::endl;
+    end_time = high_resolution_clock::now();
+    duration = end_time - start_time;
+    std::cout << "the number of data blocks that would be accessed "
+         << "by a brute-force linear scan method and its running time : "
+         << num_of_blocks_storing_data << ", " << duration.count() << std::endl;
+    std::cout << std::endl;
+
+    std::cout << "--- EXPERIMENT 5 ---" << std::endl;
+    std::cout << "--- Delete those movies with the attribute “numVotes” equal to 1,000  ---" << std::endl;
     int keyToDelete = 1000;
     // start timer
     auto start = std::chrono::high_resolution_clock::now();
-    while (bpt->DeleteRecord(keyToDelete)) {
-    }
+    while (bpt->DeleteRecord(keyToDelete));
     // end timer
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = finish - start;
-
+    std::cout << "All records containing the key " << keyToDelete << " have been deleted already:)" << std::endl;
     std::cout << "the number of nodes of the updated B+ tree: " << bpt->getNumOfNodes() << std::endl;
     std::cout << "the number of levels of the updated B+ tree: " << bpt->getNumOfLevels() << std::endl;
-    std::cout << "the content of the root node of the updated B+ tree: " << std::endl;
-    auto *rootNode = new BPTNode(bpt->getRoot());
-    for (int i = 0; i < rootNode->GetNumKeys(); i++) {
-        std::cout << "key at index " << i << " is " << root->GetKey(i) << std::endl;
+    std::cout << "the content of the root node of the updated B+ tree: ";
+    root = new BPTNode(bpt->getRoot());
+    for (int i = 0; i < root->GetNumKeys(); i++) {
+        std::cout << root->GetKey(i) << " ";
     }
-    std::cout << "Elapsed time for running deletion: " << elapsed.count() << " s\n";
-    std::cout << "the number of blocks that would be accessed by a brute-force linear scan method: " << "" << std::endl;
     std::cout << std::endl;
+    std::cout << "Elapsed time for running deletion: " << elapsed.count() << "s" << std::endl;
+
+    start_time = high_resolution_clock::now();
+    v = ScanRecords(storage->GetAddress(), 1000, 1000);
+    end_time = high_resolution_clock::now();
+    duration = end_time - start_time;
+    std::cout << "the number of data blocks that would be accessed "
+              << "by a brute-force linear scan method and its running time : "
+              << num_of_blocks_storing_data << ", " << duration.count() << std::endl;
 }

@@ -45,18 +45,18 @@ int BPT::getNumOfLevels() const {
 }
 
 // Keylist and addresslist are sorted
-void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
+void BPT::initializeBPT(std::vector<int> keylist, std::vector<char *> addresslist) {
     if (getInitialized()) {
         return;
     }
     int maxKeyCount = MAX_KEYS;
-    vector<BPTNode *> nodes;
-    vector<BPTNode *> tempnodes;
-    vector<char *> addresses;
-    vector<char *> tempaddresses;
+    std::vector<BPTNode *> nodes;
+    std::vector<BPTNode *> tempnodes;
+    std::vector<char *> addresses;
+    std::vector<char *> tempaddresses;
     // lowerbounds will be used later for inserting keys of 2nd and above levels.
-    vector<int> lowerbounds;
-    vector<int> templowerbounds;
+    std::vector<int> lowerbounds;
+    std::vector<int> templowerbounds;
     int count = 0;
     auto *leafnode = new BPTNode(getRoot());
     BPTNode *nonleafNode;
@@ -196,7 +196,7 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
 }
 
 void BPT::PrintTree() {
-    queue<char *> node_q;
+    std::queue<char *> node_q;
     node_q.push(root_);
     unsigned int level_nodes_next = 0;
     unsigned int level_nodes = 1;  // No. of nodes left in this level
@@ -228,27 +228,28 @@ void BPT::PrintTree() {
     }
 }
 
-void BPT::search(unsigned int lowerBoundKey, unsigned int upperBoundKey) {
+std::vector<char *> BPT::Search(unsigned int lower, unsigned int upper, int &record_count, int &index_block_count,
+                           int &data_block_count, float &avg_rating) {
     // Traverse the tree, start with the root and move left and right accordingly
     auto *node = new BPTNode(getRoot());
+    index_block_count++;
     bool stop = false; // default is false because not found any keys
     float total_avg = 0;
-    int record_count = 0;
-    int index_block_count = 1;
-    set<char *> data_blocks;
+    std::set<char *> data_blocks;
+    std::vector<char *> return_data;
     while (!node->IsLeaf()) {
         index_block_count++;
-        node = new BPTNode(node->GetChild(SearchKeyIndex(node, lowerBoundKey)));
+        node = new BPTNode(node->GetChild(SearchKeyIndex(node, lower)));
     }
     while (!stop) {
         for (int i = 0; i < node->GetNumKeys(); i++) {
             unsigned int num_votes = node->GetKey(i);
             // print the movie record, found
-            if (num_votes > upperBoundKey) {
+            if (num_votes > upper) {
                 stop = true;
                 break; // reach the upper bound key
             }
-            if (num_votes >= lowerBoundKey && num_votes <= upperBoundKey) {
+            if (num_votes >= lower && num_votes <= upper) {
                 char *pRecord = node->GetChild(i);
                 int offset = ((int) (pRecord - storage_->GetAddress())) % BLOCK_SIZE;
                 char *pRecordBlock = pRecord - offset;
@@ -256,9 +257,7 @@ void BPT::search(unsigned int lowerBoundKey, unsigned int upperBoundKey) {
                 RecordMovie *recordMovie = dbtypes::ReadRecordMovie(pRecordBlock, offset);
                 total_avg += recordMovie->avg_rating;
                 record_count++;
-//                cout << "Movie Record -- tconst: " << recordMovie->tconst << " avgRating: "
-//                     << recordMovie->avg_rating
-//                     << " numVotes: " << recordMovie->num_votes << endl;
+                return_data.push_back(pRecord);
             }
         }
 
@@ -271,11 +270,9 @@ void BPT::search(unsigned int lowerBoundKey, unsigned int upperBoundKey) {
             stop = true; // no right sibling or end of search range
         }
     }
-    cout << "found " << record_count << " records" << endl;
-    float average_rating = record_count ? total_avg / (float) record_count : 0;
-    cout << "average rating " << average_rating << endl;
-    cout << "number of index blocks " << index_block_count << endl;
-    cout << "number of data blocks " << data_blocks.size() << endl;
+    avg_rating = record_count ? total_avg / (float) record_count : 0;
+    data_block_count = (int) data_blocks.size();
+    return return_data;
 }
 
 char *BPT::Find_Left_Leaf(char *leaf) {
@@ -525,12 +522,10 @@ bool BPT::DeleteRecord(unsigned int keyToDelete) {
                 targetIndex = 0;
             }
             else {
-                cout << "All records containing the key " << keyToDelete << " have been deleted already:)" << endl;
                 return false;
             }
         }
         else {
-            cout << "All records containing the key " << keyToDelete << " have been deleted already:)" << endl;
             return false;
         }
     }

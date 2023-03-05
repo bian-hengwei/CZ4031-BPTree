@@ -7,8 +7,6 @@
 
 #include<vector>
 
-using namespace std;
-
 class Storage {
 public:
     explicit Storage(size_t disk_size);
@@ -39,7 +37,7 @@ public:
 
 private:
     size_t disk_size_;
-    vector<char *> blocks_;
+    std::vector<char *> blocks_;
     char *pStorage_;
 };
 

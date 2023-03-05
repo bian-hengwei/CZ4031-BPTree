@@ -22,7 +22,7 @@ public:
 
     bool getInitialized() const;
 
-    void initializeBPT(vector<int> keylist, vector<char *> addresslist);
+    void initializeBPT(std::vector<int> keylist, std::vector<char *> addresslist);
 
     int getNumOfNodes() const;
 
@@ -30,7 +30,8 @@ public:
 
     void PrintTree();
 
-    void search(unsigned int lowerBoundKey, unsigned int upperBoundKey);
+    std::vector<char *> Search(unsigned int lower, unsigned int upper, int &record_count, int &index_block_count,
+                               int &data_block_count, float &avg_rating);
 
     void Insert(unsigned int key, char *address);
 

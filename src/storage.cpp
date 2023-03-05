@@ -64,7 +64,7 @@ char *Storage::AllocateBlock() {
         return pBlock;
     }
     catch (...) {
-        cout << "Unable to add a new block due to not insufficient storage. A null pointer is returned." << endl;
+        std::cout << "Unable to add a new block due to not insufficient storage. A null pointer is returned." << std::endl;
         return nullptr;
     }
 }
