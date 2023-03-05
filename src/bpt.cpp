@@ -171,7 +171,8 @@ void BPT::initializeBPT(vector<int> keylist, vector<char *> addresslist) {
                         }
                     }
                 }
-            } else {
+            }
+            else {
                 nonleafNode->InsertKey(curKeyCount, lowerbounds[i]);
                 nonleafNode->InsertChild(curKeyCount + 1, addresses[i + 1]);
                 curKeyCount++;
@@ -227,11 +228,11 @@ void BPT::PrintTree() {
     }
 }
 
-void BPT::search(int lowerBoundKey, int upperBoundKey) {
+void BPT::search(unsigned int lowerBoundKey, unsigned int upperBoundKey) {
     // Traverse the tree, start with the root and move left and right accordingly
     auto *node = new BPTNode(getRoot());
     bool stop = false; // default is false because not found any keys
-    int total_avg = 0;
+    float total_avg = 0;
     int record_count = 0;
     int index_block_count = 1;
     set<char *> data_blocks;
@@ -241,7 +242,7 @@ void BPT::search(int lowerBoundKey, int upperBoundKey) {
     }
     while (!stop) {
         for (int i = 0; i < node->GetNumKeys(); i++) {
-            int num_votes = node->GetKey(i);
+            unsigned int num_votes = node->GetKey(i);
             // print the movie record, found
             if (num_votes > upperBoundKey) {
                 stop = true;
@@ -249,7 +250,7 @@ void BPT::search(int lowerBoundKey, int upperBoundKey) {
             }
             if (num_votes >= lowerBoundKey && num_votes <= upperBoundKey) {
                 char *pRecord = node->GetChild(i);
-                int offset = (pRecord - storage_->GetAddress()) % BLOCK_SIZE;
+                int offset = ((int) (pRecord - storage_->GetAddress())) % BLOCK_SIZE;
                 char *pRecordBlock = pRecord - offset;
                 data_blocks.insert(pRecordBlock);
                 RecordMovie *recordMovie = dbtypes::ReadRecordMovie(pRecordBlock, offset);
@@ -265,12 +266,13 @@ void BPT::search(int lowerBoundKey, int upperBoundKey) {
         if (!stop && node->GetChild(node->GetNumKeys()) != nullptr) {
             index_block_count++;
             node = new BPTNode(node->GetChild(node->GetNumKeys()));
-        } else {
+        }
+        else {
             stop = true; // no right sibling or end of search range
         }
     }
     cout << "found " << record_count << " records" << endl;
-    float average_rating = record_count ? total_avg / record_count : 0;
+    float average_rating = record_count ? total_avg / (float) record_count : 0;
     cout << "average rating " << average_rating << endl;
     cout << "number of index blocks " << index_block_count << endl;
     cout << "number of data blocks " << data_blocks.size() << endl;
@@ -296,7 +298,7 @@ char *BPT::Find_Left_Leaf(char *leaf) {
     return nullptr;
 }
 
-char *BPT::SearchLeafNode(int key) {
+char *BPT::SearchLeafNode(unsigned int key) {
     auto *node = new BPTNode(root_);
     while (!node->IsLeaf()) {
         node = new BPTNode(node->GetChild(SearchKeyIndex(node, key)));
@@ -304,7 +306,7 @@ char *BPT::SearchLeafNode(int key) {
     return node->GetAddress();
 }
 
-int BPT::SearchKeyIndex(BPTNode *node, int key) {
+int BPT::SearchKeyIndex(BPTNode *node, unsigned int key) {
     int i = 0;
     while (i < node->GetNumKeys() && key > node->GetKey(i)) {
         i += 1;
@@ -312,15 +314,17 @@ int BPT::SearchKeyIndex(BPTNode *node, int key) {
     return i;
 }
 
-void BPT::InsertToArray(BPTNode *node, int index, int key, char *address, int *keys, char **children) {
+void BPT::InsertToArray(BPTNode *node, int index, unsigned int key, char *address, unsigned int *keys, char **children) {
     for (int j = 0; j < node->GetNumKeys() + 1; j++) {
         if (j < index) {
             keys[j] = node->GetKey(j);
             children[j] = node->GetChild(j);
-        } else if (index == j) {
+        }
+        else if (index == j) {
             keys[j] = key;
             children[j] = address;
-        } else {
+        }
+        else {
             keys[j] = node->GetKey(j - 1);
             children[j] = node->GetChild(j - 1);
         }
@@ -332,7 +336,7 @@ void BPT::InsertToArray(BPTNode *node, int index, int key, char *address, int *k
  * Assume node_l and node_r already correctly constructed,
  * this function tries to either insert them into their parents.
  */
-void BPT::InsertToParent(char *node, int middle_key, char *node_l_block, char *node_r_block) {
+void BPT::InsertToParent(char *node, unsigned int middle_key, char *node_l_block, char *node_r_block) {
     auto *current_node = new BPTNode(node);
     auto *node_l = new BPTNode(node_l_block);
     auto *node_r = new BPTNode(node_r_block);
@@ -351,7 +355,8 @@ void BPT::InsertToParent(char *node, int middle_key, char *node_l_block, char *n
         // update root address
         root_ = new_root_block;
         num_of_levels_++;
-    } else {
+    }
+    else {
         // if node is not root, we find its parent
         char *parent = current_node->GetParent();
         auto *parent_node = new BPTNode(parent);
@@ -368,7 +373,7 @@ void BPT::InsertToParent(char *node, int middle_key, char *node_l_block, char *n
             parent_node->InsertChild(i, node_l_block);
             return;
         }
-        int parent_keys[MAX_KEYS + 1];
+        unsigned int parent_keys[MAX_KEYS + 1];
         char *parent_children[MAX_KEYS + 2];
         InsertToArray(parent_node, i, middle_key,
                       node_l_block, parent_keys, parent_children);
@@ -379,9 +384,9 @@ void BPT::InsertToParent(char *node, int middle_key, char *node_l_block, char *n
 /**
  * Splits a non-leaf node
  */
-void BPT::SplitNonLeaf(char *node, int keys[], char *children[]) {
+void BPT::SplitNonLeaf(char *node, unsigned int *keys, char *children[]) {
     num_of_nodes_++;
-    int middle_key;
+    unsigned int middle_key;
     int size_l = (MAX_KEYS + 1) / 2;  // 7 keys & 8 children; size_r = MAX_KEYS - size_l;  // 7 keys & 8 children
 
     // initialize new blocks
@@ -398,9 +403,11 @@ void BPT::SplitNonLeaf(char *node, int keys[], char *children[]) {
     for (int i = 0; i < MAX_KEYS + 1; i++) {
         if (i < size_l) {
             node_l->InsertKey(i, keys[i]);
-        } else if (i == size_l) {
+        }
+        else if (i == size_l) {
             middle_key = keys[i];
-        } else {
+        }
+        else {
             node_r->InsertKey(i - size_l - 1, keys[i]);
         }
     }
@@ -411,7 +418,8 @@ void BPT::SplitNonLeaf(char *node, int keys[], char *children[]) {
         if (i <= size_l) {
             node_l->InsertChild(i, children[i]);
             temp->SetParent(node_l->GetAddress());
-        } else {
+        }
+        else {
             node_r->InsertChild(i - size_l - 1, children[i]);
             temp->SetParent(node_r->GetAddress());
         }
@@ -422,10 +430,10 @@ void BPT::SplitNonLeaf(char *node, int keys[], char *children[]) {
     storage_->FreeBlock(node);
 }
 
-void BPT::SplitLeaf(char *leaf, int keys[], char *children[]) {
+void BPT::SplitLeaf(char *leaf, unsigned int *keys, char *children[]) {
     num_of_nodes_++;
     int size_l = (MAX_KEYS + 1) / 2;  // 7 keys; size_r = MAX_KEYS + 1 - size_l;  // 8 keys
-    int middle_key = keys[size_l];
+    unsigned int middle_key = keys[size_l];
 
     char *node_l_block = storage_->AllocateBlock();
     block::bpt::Initialize_D(node_l_block);
@@ -441,7 +449,8 @@ void BPT::SplitLeaf(char *leaf, int keys[], char *children[]) {
     for (int i = 0; i < MAX_KEYS + 1; i++) {
         if (i < size_l) {
             node_l->InsertKey(i, keys[i]);
-        } else {
+        }
+        else {
             node_r->InsertKey(i - size_l, keys[i]);
         }
     }
@@ -450,7 +459,8 @@ void BPT::SplitLeaf(char *leaf, int keys[], char *children[]) {
     for (int i = 0; i < MAX_KEYS + 2; i++) {
         if (i < size_l) {
             node_l->InsertChild(i, children[i]);
-        } else {
+        }
+        else {
             node_r->InsertChild(i - size_l, children[i]);
         }
     }
@@ -458,7 +468,7 @@ void BPT::SplitLeaf(char *leaf, int keys[], char *children[]) {
 
     char *left_leaf = Find_Left_Leaf(leaf);
     if (left_leaf) {
-        BPTNode *left_leaf_node = new BPTNode(left_leaf);
+        auto *left_leaf_node = new BPTNode(left_leaf);
         left_leaf_node->SetChild(left_leaf_node->GetNumKeys(), node_l_block);
     }
 
@@ -467,7 +477,7 @@ void BPT::SplitLeaf(char *leaf, int keys[], char *children[]) {
     storage_->FreeBlock(leaf);
 }
 
-void BPT::Insert(int key, char *address) {
+void BPT::Insert(unsigned int key, char *address) {
     auto *leaf_node = new BPTNode(SearchLeafNode(key));
     int i = SearchKeyIndex(leaf_node, key);
 
@@ -476,7 +486,7 @@ void BPT::Insert(int key, char *address) {
         leaf_node->InsertChild(i, address);
         return;
     }
-    int keys[MAX_KEYS + 1];
+    unsigned int keys[MAX_KEYS + 1];
     char *children[MAX_KEYS + 2];
     InsertToArray(leaf_node, i, key, address, keys, children);
     SplitLeaf(leaf_node->GetAddress(), keys, children);
@@ -489,7 +499,7 @@ void BPT::Insert(int key, char *address) {
  * @return true if deletion is successful. If false is returned, it means the key may not exist in the index
  * @author Song Yu
  */
-bool BPT::DeleteRecord(int keyToDelete) {
+bool BPT::DeleteRecord(unsigned int keyToDelete) {
     // find nodes of the target
     auto *leafNode = new BPTNode(SearchLeafNode(keyToDelete));
 
@@ -513,11 +523,13 @@ bool BPT::DeleteRecord(int keyToDelete) {
                 leafNode = nextNode;
                 recordAddr = leafNode->GetChild(0);
                 targetIndex = 0;
-            } else {
+            }
+            else {
                 cout << "All records containing the key " << keyToDelete << " have been deleted already:)" << endl;
                 return false;
             }
-        } else {
+        }
+        else {
             cout << "All records containing the key " << keyToDelete << " have been deleted already:)" << endl;
             return false;
         }
@@ -559,7 +571,7 @@ void BPT::FixTree(char *leafNodeAddr) {
                 if (leftSibling->IsNumOfKeysEnough()) {
                     int indexToBorrow = leftSibling->GetNumKeys() - 1;
                     // get the key to borrow from the left sibling
-                    int borrowedKey = leftSibling->GetKey(indexToBorrow);
+                    unsigned int borrowedKey = leftSibling->GetKey(indexToBorrow);
                     // get the rightmost child of the left sibling
                     auto *borrowedChildAddr = leftSibling->GetChild(indexToBorrow);
                     // insert the borrowed key and child into the current node
@@ -579,7 +591,7 @@ void BPT::FixTree(char *leafNodeAddr) {
                 if (rightSibling->IsNumOfKeysEnough()) {
                     int indexToBorrow = 0;
                     // get the key to borrow from the right sibling
-                    int borrowedKey = rightSibling->GetKey(indexToBorrow);
+                    unsigned int borrowedKey = rightSibling->GetKey(indexToBorrow);
                     // get the leftmost child of the right sibling
                     auto *borrowedChildAddr = rightSibling->GetChild(indexToBorrow);
                     // insert the borrowed key and child into the current node
@@ -613,7 +625,8 @@ void BPT::FixTree(char *leafNodeAddr) {
                 // update curNode to left sibling
                 curNode = leftSibling;
                 num_of_nodes_--;
-            } else {
+            }
+            else {
                 // Merge with the right sibling
                 int rightSiblingIndex = curIndex + 1;
                 auto *rightSibling = new BPTNode(parentNode->GetChild(rightSiblingIndex));
@@ -661,7 +674,8 @@ void BPT::FixTree(char *leafNodeAddr) {
         setRoot(newRootAddr);
         num_of_nodes_--;
         num_of_levels_--;
-    } else {
+    }
+    else {
         // update the keys in root
         UpdateKeysToNextLB(rootNode);
     }

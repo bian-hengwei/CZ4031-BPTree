@@ -30,13 +30,13 @@ public:
 
     void PrintTree();
 
-    void search(int lowerBoundKey, int upperBoundKey);
+    void search(unsigned int lowerBoundKey, unsigned int upperBoundKey);
 
-    void Insert(int key, char *address);
+    void Insert(unsigned int key, char *address);
 
-    char *SearchLeafNode(int key);
+    char *SearchLeafNode(unsigned int key);
 
-    bool DeleteRecord(int keyToDelete);
+    bool DeleteRecord(unsigned int keyToDelete);
 
     void FixTree(char *leafNodeAddr);
 
@@ -48,19 +48,19 @@ private:
     int num_of_nodes_;
     int num_of_levels_;
 
-    static int SearchKeyIndex(BPTNode *node, int key);
+    static int SearchKeyIndex(BPTNode *node, unsigned int key);
 
-    static void InsertToArray(BPTNode *node, int index, int key, char *address, int *keys, char **children);
+    static void InsertToArray(BPTNode *node, int index, unsigned int key, char *address, unsigned int *keys, char **children);
 
-    void SplitNonLeaf(char *leaf, int *keys, char **children);
+    void SplitNonLeaf(char *leaf, unsigned int *keys, char **children);
 
-    void SplitLeaf(char *leaf, int *keys, char **children);
+    void SplitLeaf(char *leaf, unsigned int *keys, char **children);
 
-    void InsertToParent(char *node, int middle_key, char *node_l_block, char *node_r_block);
+    void InsertToParent(char *node, unsigned int middle_key, char *node_l_block, char *node_r_block);
 
-    static void UpdateKeysToNextLB(BPTNode *nodeToUpdate) ;
+    static void UpdateKeysToNextLB(BPTNode *nodeToUpdate);
 
-    char *Find_Left_Leaf(char *leaf);
+    static char *Find_Left_Leaf(char *leaf);
 };
 
 #endif //BPT_H

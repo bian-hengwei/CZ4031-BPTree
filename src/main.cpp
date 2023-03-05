@@ -40,12 +40,13 @@ vector<char *> ScanRecords(char *storage, int lo, int hi) {
 }
 
 int main() {
-    Storage *storage = new Storage(DISK_CAPACITY);
+    auto *storage = new Storage(DISK_CAPACITY);
 
     char *pRoot = storage->AllocateBlock();
     block::bpt::Initialize_D(pRoot);
+
     BPT *bpt = new BPT(pRoot, storage);
-    BPTNode *root = new BPTNode(pRoot);
+    auto *root = new BPTNode(pRoot);
     root->SetLeaf(true);
 
     // read data
@@ -64,8 +65,8 @@ int main() {
     int num_of_blocks_storing_data = 0;
     // 2
     int parameter_n = MAX_KEYS;
-    int num_of_nodes_in_bpt = 0;
-    int num_of_levels_in_bpt = 0;
+    int num_of_nodes_in_bpt;
+    int num_of_levels_in_bpt;
 
     char *pBlock = nullptr;
 

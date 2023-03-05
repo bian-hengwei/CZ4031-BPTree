@@ -38,21 +38,19 @@ public:
 
     void SetParent(char *parent);
 
-    int GetMinKey() const;
+    unsigned int GetMinKey() const;
 
-    bool IsNumOfKeysEnough() const;
+    unsigned int GetMaxKey() const;
 
-    int GetMaxKey() const;
-
-    int GetKey(unsigned short index) const;
+    unsigned int GetKey(unsigned short index) const;
 
     char *GetChild(unsigned short index) const;
 
-    void SetKey(unsigned short index, int key);
+    void SetKey(unsigned short index, unsigned int key);
 
     void SetChild(unsigned short index, char *child);
 
-    void InsertKey(unsigned short index, int key);
+    void InsertKey(unsigned short index, unsigned int key);
 
     void InsertChild(unsigned short index, char *child);
 
@@ -62,11 +60,13 @@ public:
 
     int GetChildIndex(const char *childNodeAddress) const;
 
+    bool IsNumOfKeysEnough() const;
+
 private:
     char *pBlock_;
     char *pBlockMem_;
     BPTNodeHead *bpt_node_head_;
-    int *keys_;
+    unsigned int *keys_;
     char **children_;
 };
 

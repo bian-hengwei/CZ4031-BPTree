@@ -9,7 +9,7 @@ BPTNode::BPTNode(char *pBlock) : pBlock_(pBlock) {
     pBlockMem_ = static_cast<char *>(operator new(BLOCK_SIZE));
     Storage::ReadBlock(pBlockMem_, pBlock);
     bpt_node_head_ = (BPTNodeHead *) (pBlockMem_ + BLOCK_HEADER_SIZE);
-    keys_ = (int *) (pBlockMem_ + BLOCK_HEADER_SIZE + NODE_HEAD_SIZE);
+    keys_ = (unsigned int *) (pBlockMem_ + BLOCK_HEADER_SIZE + NODE_HEAD_SIZE);
     children_ = (char **) (pBlockMem_ + BLOCK_HEADER_SIZE + NODE_HEAD_SIZE + sizeof(int) * MAX_KEYS);
 }
 
@@ -53,16 +53,15 @@ void BPTNode::SetParent(char *parent) {
     SaveNode();
 }
 
-int BPTNode::GetMinKey() const {
+unsigned int BPTNode::GetMinKey() const {
     return keys_[0];
 }
 
-int BPTNode::GetMaxKey() const {
+unsigned int BPTNode::GetMaxKey() const {
     return keys_[bpt_node_head_->num_keys_ - 1];
 }
 
-
-int BPTNode::GetKey(unsigned short index) const {
+unsigned int BPTNode::GetKey(unsigned short index) const {
     return keys_[index];
 }
 
@@ -70,7 +69,7 @@ char *BPTNode::GetChild(unsigned short index) const {
     return children_[index];
 }
 
-void BPTNode::SetKey(unsigned short index, int key) {
+void BPTNode::SetKey(unsigned short index, unsigned int key) {
     assert(0 <= index);
     assert(index < GetNumKeys());
     assert(index < MAX_KEYS);
@@ -86,7 +85,7 @@ void BPTNode::SetChild(unsigned short index, char *child) {
     SaveNode();
 }
 
-void BPTNode::InsertKey(unsigned short index, int key) {
+void BPTNode::InsertKey(unsigned short index, unsigned int key) {
     assert(0 <= index);
     assert(index <= GetNumKeys());  // if index == GetNumKeys, append
     assert(index < MAX_KEYS);
@@ -139,7 +138,8 @@ int BPTNode::GetChildIndex(const char *childNodeAddress) const {
 bool BPTNode::IsNumOfKeysEnough() const {
     if (IsLeaf()) {
         return GetNumKeys() >= floor((MAX_KEYS + 1) / 2);
-    } else {
+    }
+    else {
         return GetNumKeys() >= floor(MAX_KEYS / 2);
     }
 }
