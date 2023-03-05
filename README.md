@@ -2,6 +2,8 @@
 
 Project 1 repository for CZ4031.
 
+**THERE ARE KNOWN BUGS WITH BULKLOADING AND DELETE**
+
 ## HOW TO RUN
 
 Under root folder, execute
