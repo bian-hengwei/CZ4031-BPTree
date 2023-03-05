@@ -168,4 +168,25 @@ int main() {
     cout
             << "the number of data blocks that would be accessed by a brute-force linear scan method and its running time : "
             << num_of_blocks_storing_data << ", " << duration.count() << endl;
+    cout << "--- EXPERIMENT 5 ---" << endl;
+    cout << "--- Delete those movies with the attribute “numVotes” equal to 1,000  ---" << endl;
+    int keyToDelete = 1000;
+    // start timer
+    auto start = std::chrono::high_resolution_clock::now();
+    while (bpt->DeleteRecord(keyToDelete)) {
+    }
+    // end timer
+    auto finish = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = finish - start;
+
+    std::cout << "the number of nodes of the updated B+ tree: " << bpt->getNumOfNodes() << std::endl;
+    std::cout << "the number of levels of the updated B+ tree: " << bpt->getNumOfLevels() << std::endl;
+    std::cout << "the content of the root node of the updated B+ tree: " << std::endl;
+    auto *rootNode = new BPTNode(bpt->getRoot());
+    for (int i = 0; i < rootNode->GetNumKeys(); i++) {
+        std::cout << "key at index " << i << " is " << root->GetKey(i) << std::endl;
+    }
+    std::cout << "Elapsed time for running deletion: " << elapsed.count() << " s\n";
+    std::cout << "the number of blocks that would be accessed by a brute-force linear scan method: " << "" << std::endl;
+    std::cout << std::endl;
 }
